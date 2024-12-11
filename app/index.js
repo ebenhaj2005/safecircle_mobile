@@ -4,8 +4,8 @@ import { Link } from 'expo-router';
 export default function Home() {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Home Screen</Text>
-      <Link href="/circle" style={styles.link}>
+      <Text style={styles.text}>Login Screen</Text>
+      <Link href="/login" style={styles.link}>
         Go to circle Screen
       </Link>
     </View>
