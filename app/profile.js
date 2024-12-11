@@ -5,6 +5,7 @@ import { Link } from 'expo-router';
 
 export default function Profile() {
   return (
+
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
         {/* Profile Picture */}
@@ -38,6 +39,7 @@ export default function Profile() {
         </View>
       </View>
     </ScrollView>
+
   );
 }
 
