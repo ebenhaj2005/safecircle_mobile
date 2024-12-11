@@ -5,8 +5,8 @@ export default function profile() {
   return (
     <View style={styles.container}>
       <Text style={styles.text}>Profile Screen</Text>
-      <Link href="/" style={styles.link}>
-        Go to home Screen
+      <Link href="/login" style={styles.link}>
+        Go to login Screen
       </Link>
     </View>
   );
