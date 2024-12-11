@@ -8,6 +8,8 @@ export default function RootLayout() {
       <Stack.Screen name="map" options={{ title: "map",headerShown: false }} />
       <Stack.Screen name="event" options={{ title: "event",headerShown: false }} />
       <Stack.Screen name="profile" options={{ title: "profile",headerShown: false }} />
+      <Stack.Screen name="login" options={{ title: "login",headerShown: false }} />
+      <Stack.Screen name="signUp" options={{ title: 'signUp', headerShown: false }} />
 
     </Stack>
   );
