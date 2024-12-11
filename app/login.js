@@ -13,7 +13,7 @@ export default function LoginPage() {
     }
     Alert.alert(
       "Login Successful",
-      `Username: ${username}\nPassword: ${password}`
+      `Welcome: ${username}`
     );
   };
 
@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 5,
-    color: "#fff",
+    color: "black",
     backgroundColor: "white",
   },
   link: {
