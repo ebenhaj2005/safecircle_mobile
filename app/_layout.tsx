@@ -1,7 +1,9 @@
-import { Stack } from "expo-router";
+import { Stack, useSegments } from "expo-router";
 import Navbar from "../components/Navbar";
 
 export default function RootLayout() {
+  const segments: string[] = useSegments();
+  const hideNavbar = segments.includes("login") || segments.includes("signUp");
   return (
     <>
     <Stack>
@@ -13,7 +15,8 @@ export default function RootLayout() {
         <Stack.Screen name="login" options={{ title: "login",headerShown: false }} />
         <Stack.Screen name="signUp" options={{ title: 'signUp', headerShown: false }} />
       </Stack>
-      <Navbar />
+      
+      {!hideNavbar && <Navbar />}
     </>
   );
 }
