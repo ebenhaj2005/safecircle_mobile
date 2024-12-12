@@ -8,6 +8,7 @@ import {
   TextInput,
   Modal
 } from "react-native";
+import { Link } from "expo-router";
 
 export default function Contact() {
   const [subject, setSubject] = useState("Choose a subject");
@@ -26,6 +27,13 @@ export default function Contact() {
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
+
+      <TouchableOpacity style={styles.backButton}>
+          <Link href="/profile" style={{ alignSelf: "flex-start" }}>
+            <Text style={styles.backButtonText}>Back</Text>
+          </Link>
+        </TouchableOpacity>
+
         <Text style={styles.title}>Contact Us</Text>
         <Text style={styles.description}>
           Please fill out this form to contact the admin.
@@ -110,6 +118,19 @@ const styles = StyleSheet.create({
     backgroundColor: "#f4f4f4",
     padding: 20,
     marginTop: 40
+  },
+  backButton: {
+    alignSelf: "flex-start",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    marginBottom: 20,
+    backgroundColor: "#CD9594",
+    borderRadius: 5
+  },
+  backButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold"
   },
   container: {
     alignItems: "center",

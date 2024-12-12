@@ -3,7 +3,7 @@ import Navbar from "../components/Navbar";
 
 export default function RootLayout() {
   const segments: string[] = useSegments();
-  const hideNavbar = segments.includes("login") || segments.includes("signUp") || segments.includes("passwordForget") || segments.includes("eventrequestpage");
+  const hideNavbar = segments.includes("login") || segments.includes("signUp") || segments.includes("passwordForget") || segments.includes("eventrequestpage")|| segments.includes("profileAddChild")|| segments.includes("profileChildren")|| segments.includes("profileHistory")|| segments.includes("settings")|| segments.includes("contact")|| segments.includes("profilePI");
   return (
     <>
     <Stack>
