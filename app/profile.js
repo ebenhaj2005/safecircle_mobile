@@ -42,7 +42,9 @@ export default function Profile() {
             </Link>
           </TouchableOpacity>
           <TouchableOpacity style={styles.button}>
-            <Text style={styles.buttonText}>Contact</Text>
+            <Link href="/contact" style={styles.link}>
+              <Text style={styles.buttonText}>Contact</Text>
+            </Link>
           </TouchableOpacity>
           <TouchableOpacity style={styles.button}>
             <Text style={styles.buttonText}>Log Out</Text>

@@ -20,6 +20,7 @@ export default function RootLayout() {
         <Stack.Screen name="profileChildren" options={{ title: "profileChildren",headerShown: false }} />
         <Stack.Screen name="profileAddChild" options={{ title: "profileAddChild",headerShown: false }} />
         <Stack.Screen name="settings" options={{ title: "settings",headerShown: false }} />
+        <Stack.Screen name="contact" options={{ title: "contact",headerShown: false }} />
 
 
 
