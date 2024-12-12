@@ -54,7 +54,10 @@ export default function ProfileChildren() {
 
         {/* Add Child Button */}
         <TouchableOpacity style={styles.addButton}>
+        <Link href="/profileAddChild">
+
           <Text style={styles.addButtonText}>Add Child</Text>
+          </Link>
         </TouchableOpacity>
       </View>
     </ScrollView>
