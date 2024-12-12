@@ -1,5 +1,5 @@
-import { View, Text, StyleSheet } from 'react-native';
-import { Link } from 'expo-router';
+import { View, Text, StyleSheet } from "react-native";
+import { Link } from "expo-router";
 
 export default function Home() {
   return (
@@ -8,7 +8,6 @@ export default function Home() {
       <Link href="/event" style={styles.link}>
         Go to event Screen
       </Link>
-    
     </View>
   );
 }
@@ -16,18 +15,18 @@ export default function Home() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'red',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "red",
   },
   text: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 20,
   },
   link: {
     marginTop: 20,
-    color: 'skyblue',
-    textDecorationLine: 'underline',
+    color: "skyblue",
+    textDecorationLine: "underline",
     fontSize: 18,
   },
 });

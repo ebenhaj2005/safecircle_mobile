@@ -199,6 +199,7 @@ export default function Home() {
         </View>
       </Modal>
     </ScrollView>
+
   );
 }
 
