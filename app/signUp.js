@@ -1,24 +1,31 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert, Image } from 'react-native';
-import { Link } from 'expo-router';
 import { useRouter } from 'expo-router';
+import Cookies from 'js-cookie';
+
+const token = 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MzQwMTI5MjcsInN1YiI6IjIiLCJyb2xlIjoiVVNFUiJ9.LEhOFKH8xSB3tum115Mm6qaXecurwnD3v6cYCOtTFEg';
+Cookies.set('bearer_token', token, { expires: 1 }); // De token vervalt na 1 dag
+
 export default function signUp() {
-  const [firstname, setFirstName] = useState('');
-  const [lastname, setLastName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [repeatpassword, setRepeatPassword] = useState('');
+  const [repeatPassword, setRepeatPassword] = useState('');
+  const [phone, setPhone] = useState('');
   const router = useRouter();
 
-  const handleSignUp = () => {
-    if (firstname.trim().length === 0) {
+  const handleSignUp = async () => {
+    
+    
+    if (firstName.trim().length === 0) {
       Alert.alert('Error', 'Firstname cannot be empty');
       return;
     }
-    if (lastname.trim().length === 0) {
-        Alert.alert('Error', 'Lastame cannot be empty');
-        return;
-      }
+    if (lastName.trim().length === 0) {
+      Alert.alert('Error', 'Lastname cannot be empty');
+      return;
+    }
     if (email.trim().length === 0) {
       Alert.alert('Error', 'Email cannot be empty');
       return;
@@ -27,98 +34,107 @@ export default function signUp() {
       Alert.alert('Error', 'Password must be at least 6 characters long');
       return;
     }
-    if (repeatpassword != password) {
-        Alert.alert('Error', 'Password is not matching');
-        return;
-      }
-    Alert.alert('Success', `Welcome, ${firstname } ${lastname}!`, [
-      {
-        text: 'OK',
-        onPress: () => router.push('/'), 
-      },
-    ]);
-  };
+    if (repeatPassword !== password) {
+      Alert.alert('Error', 'Password is not matching');
+      return;
+    }
 
-    
-  ;
+    const token = Cookies.get('bearer_token'); // Haal de Bearer token uit de cookie
+
+    try {
+      const response = await fetch('http://10.2.16.27:8080/user/authenticate', { // Gebruik het juiste IP-adres
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          email,
+          password,
+          phone
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        Alert.alert('Success', `Welcome, ${firstName} ${lastName}!`, [
+          {
+            text: 'OK',
+            onPress: () => router.push('/'),
+          },
+        ]);
+      } else {
+        Alert.alert('Error', data.message || 'Something went wrong');
+      }
+    } catch (error) {
+      console.error('Sign up error:', error); // Log de fout in de console
+      Alert.alert('Error', 'Failed to sign up');
+    }
+  };
 
   return (
     <View style={styles.container}>
-   
-   <Image
+      <Image
         source={require("../assets/images/safecirclelogo.png")}
         style={{ width: 300, height: 300, marginBottom: 20 }}
       />
       <TextInput
         style={styles.input}
         placeholder="First name"
-        value={firstname}
+        value={firstName}
         onChangeText={setFirstName}
       />
-
-<TextInput
+      <TextInput
         style={styles.input}
         placeholder="Last name"
-        value={lastname}
+        value={lastName}
         onChangeText={setLastName}
       />
-       <TextInput
+      <TextInput
         style={styles.input}
-        placeholder="email"
+        placeholder="Email"
         value={email}
         onChangeText={setEmail}
       />
-    
-     
-
       <TextInput
         style={styles.input}
         placeholder="Password"
-        secureTextEntry
         value={password}
         onChangeText={setPassword}
-       
+        secureTextEntry
       />
- <TextInput
+      <TextInput
         style={styles.input}
         placeholder="Repeat Password"
-        secureTextEntry
-        value={repeatpassword}
+        value={repeatPassword}
         onChangeText={setRepeatPassword}
-   
+        secureTextEntry
       />
-      <Button title="Sign Up" onPress={handleSignUp} color="#CD9594" />
-
-      <Link href="/login" style={styles.link}>
-        Already have an account? Go to Login
-      </Link>
+      <TextInput
+        style={styles.input}
+        placeholder="Phone (optional)"
+        value={phone}
+        onChangeText={setPhone}
+      />
+      <Button title="Sign Up" onPress={handleSignUp} />
     </View>
-  )};
-
+  );
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'white',
-    padding: 20,
+    padding: 16,
   },
- 
   input: {
-    width: '100%',
-    padding: 10,
-    marginBottom: 15,
+    height: 40,
+    borderColor: 'gray',
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    color: '#black',
-    backgroundColor: 'white',
-  },
-  link: {
-    marginTop: 20,
-    color: '#CD9594',
-    textDecorationLine: 'underline',
-    fontSize: 16,
+    marginBottom: 12,
+    paddingHorizontal: 8,
   },
 });
