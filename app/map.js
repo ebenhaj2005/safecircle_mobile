@@ -126,6 +126,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "white",
     marginTop: 0,
+    marginBottom: 40,
   },
   text: {
     marginBottom: 30,
