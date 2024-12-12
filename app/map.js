@@ -8,6 +8,7 @@ export default function Home() {
       <Link href="/event" style={styles.link}>
         Go to event Screen
       </Link>
+    
     </View>
   );
 }
