@@ -11,7 +11,7 @@ export default function passwordForget() {
       return;
     }
     Alert.alert('Recovery Email Sent', `A password recovery email has been sent to ${email}.`);
-    router.push('/');
+    router.push('/index');
   };
 
   return (
