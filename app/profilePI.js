@@ -1,30 +1,41 @@
-import React from 'react';
-import { Text, View, Image, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { Link } from 'expo-router';
-import { FontAwesome } from '@expo/vector-icons';
+import React from "react";
+import {
+  Text,
+  View,
+  Image,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity
+} from "react-native";
+import { Link } from "expo-router";
+import { FontAwesome } from "@expo/vector-icons";
 
 export default function ProfilePI() {
   const user = {
-    firstName: 'John',
-    lastName: 'Doe',
-    phoneNumber: '+123456789',
-    profileImage: 'https://randomuser.me/api/portraits/men/1.jpg',
+    firstName: "John",
+    lastName: "Doe",
+    phoneNumber: "+123456789",
+    profileImage: "https://randomuser.me/api/portraits/men/1.jpg"
   };
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
         {/* Back Button */}
-        <Link href="/profile" style={styles.link}>
-          <TouchableOpacity style={styles.backButton}>
+
+        <TouchableOpacity style={styles.backButton}>
+          <Link href="/profile" style={{ alignSelf: "flex-start" }}>
             <Text style={styles.backButtonText}>Back</Text>
-          </TouchableOpacity>
-        </Link>
+          </Link>
+        </TouchableOpacity>
 
         {/* Profile Section */}
         <View style={styles.profileSection}>
           <View style={styles.profileImageContainer}>
-            <Image style={styles.profileImage} source={{ uri: user.profileImage }} />
+            <Image
+              style={styles.profileImage}
+              source={{ uri: user.profileImage }}
+            />
             <View style={styles.editProfileImage}>
               <FontAwesome name="pencil" size={24} color="#fff" />
             </View>
@@ -54,7 +65,9 @@ export default function ProfilePI() {
 
         {/* History Button */}
         <TouchableOpacity style={styles.historyButton}>
-          <Text style={styles.historyButtonText}>History</Text>
+          <Link href="/profileHistory" style={styles.link}>
+            <Text style={styles.historyButtonText}>History</Text>
+          </Link>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -64,94 +77,95 @@ export default function ProfilePI() {
 const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    backgroundColor: '#f4f4f4',
-    padding: 20,
+    justifyContent: "flex-start",
+    alignItems: "center",
+    backgroundColor: "#f4f4f4",
+    padding: 20
   },
   container: {
-    alignItems: 'center',
-    width: '100%',
+    alignItems: "center",
+    width: "100%"
   },
   backButton: {
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
     paddingVertical: 10,
     paddingHorizontal: 20,
     marginBottom: 20,
-    backgroundColor: '#CD9594',
-    borderRadius: 5,
+    backgroundColor: "#CD9594",
+    borderRadius: 5
   },
   backButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold"
   },
   profileSection: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 30,
-    width: '100%',
+    width: "100%"
   },
   profileImageContainer: {
-    position: 'relative',
-    marginBottom: 20,
+    position: "relative",
+    marginBottom: 20
   },
   profileImage: {
     width: 150,
     height: 150,
     borderRadius: 75,
     borderWidth: 3,
-    borderColor: '#ccc',
+    borderColor: "#ccc"
   },
   editProfileImage: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     width: 150,
     height: 150,
     borderRadius: 75,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center"
   },
   infoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 10,
-    width: '100%',
-    paddingHorizontal: 20,
+    width: "100%",
+    paddingHorizontal: 20
   },
   label: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-    flex: 1,
+    fontWeight: "bold",
+    color: "#333",
+    flex: 1
   },
   info: {
     fontSize: 16,
-    color: '#555',
-    flex: 2,
+    color: "#555",
+    flex: 2
   },
   editButton: {
-    backgroundColor: '#CD9594',
+    backgroundColor: "#CD9594",
     padding: 5,
     borderRadius: 5,
     marginLeft: 10,
+    marginTop: 20
   },
   historyButton: {
-    width: '90%',
-    backgroundColor: '#CD9594',
+    width: "90%",
+    backgroundColor: "#CD9594",
     paddingVertical: 15,
     borderRadius: 10,
-    alignItems: 'center',
+    alignItems: "center"
   },
   historyButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold"
   },
   link: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+    justifyContent: "center",
+    alignItems: "center"
+  }
 });

@@ -19,11 +19,13 @@ export default function Profile() {
 
         {/* Buttons */}
         <View style={styles.buttonsContainer}>
-          <Link href="/profilePI" style={styles.link}>
             <TouchableOpacity style={styles.button}>
+            <Link href="/profilePI" style={styles.link}>
+
               <Text style={styles.buttonText}>Personal Information</Text>
+              </Link>
+
             </TouchableOpacity>
-          </Link>
           <TouchableOpacity style={styles.button}>
             <Text style={styles.buttonText}>Children</Text>
           </TouchableOpacity>
@@ -102,6 +104,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+    textAlign: 'center',
   },
   link: {
     width: '100%',

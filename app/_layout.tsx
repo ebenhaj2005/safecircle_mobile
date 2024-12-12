@@ -16,6 +16,8 @@ export default function RootLayout() {
         <Stack.Screen name="login" options={{ title: "login",headerShown: false }} />
         <Stack.Screen name="signUp" options={{ title: 'signUp', headerShown: false }} />     
         <Stack.Screen name="profilePI" options={{ title: "profilePI",headerShown: false }} />
+        <Stack.Screen name="profileHistory" options={{ title: "profileHistory",headerShown: false }} />
+
       </Stack>
       
       {!hideNavbar && <Navbar />}
