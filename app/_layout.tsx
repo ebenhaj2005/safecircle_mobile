@@ -1,3 +1,4 @@
+import React from "react";
 import { Stack, useSegments } from "expo-router";
 import Navbar from "../components/Navbar";
 
