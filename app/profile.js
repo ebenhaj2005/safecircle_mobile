@@ -1,29 +1,29 @@
 import React from 'react';
-import { Text, View, Image, StyleSheet, Button, ScrollView, TouchableOpacity } from 'react-native';
+import { Text, View, Image, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Link } from 'expo-router';
-
 
 export default function Profile() {
   return (
-
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
         {/* Profile Picture */}
-        <Image
-          style={styles.profileImage}
-          source={{ uri: 'https://randomuser.me/api/portraits/men/1.jpg' }}
-        />
+        <View style={styles.profileImageContainer}>
+          <Image
+            style={styles.profileImage}
+            source={{ uri: 'https://randomuser.me/api/portraits/men/1.jpg' }}
+          />
+        </View>
 
         {/* Profile Information */}
         <Text style={styles.name}>John Doe</Text>
 
         {/* Buttons */}
         <View style={styles.buttonsContainer}>
-          <TouchableOpacity style={styles.button}           >
-            <Text style={styles.buttonText}><Link href="/profilePI" style={styles.link}>
-            Personal Information
-            </Link></Text>
-          </TouchableOpacity>
+          <Link href="/profilePI" style={styles.link}>
+            <TouchableOpacity style={styles.button}>
+              <Text style={styles.buttonText}>Personal Information</Text>
+            </TouchableOpacity>
+          </Link>
           <TouchableOpacity style={styles.button}>
             <Text style={styles.buttonText}>Children</Text>
           </TouchableOpacity>
@@ -39,7 +39,6 @@ export default function Profile() {
         </View>
       </View>
     </ScrollView>
-
   );
 }
 
@@ -50,19 +49,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#f4f4f4',
     padding: 20,
-    marginTop: 40, // Increased margin at the top
+    marginTop: 40,
   },
   container: {
     alignItems: 'center',
     width: '100%',
   },
+  profileImageContainer: {
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    borderWidth: 3,
+    borderColor: '#ccc',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
   profileImage: {
     width: 150,
     height: 150,
     borderRadius: 75,
-    borderWidth: 3,
-    borderColor: '#ccc',
-    marginBottom: 20,
   },
   name: {
     fontSize: 24,
@@ -81,10 +92,18 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginVertical: 10,
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 10,
   },
   buttonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  link: {
+    width: '100%',
   },
 });

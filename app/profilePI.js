@@ -1,9 +1,9 @@
 import React from 'react';
 import { Text, View, Image, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Link } from 'expo-router';
+import { FontAwesome } from '@expo/vector-icons';
 
 export default function ProfilePI() {
-
   const user = {
     firstName: 'John',
     lastName: 'Doe',
@@ -15,19 +15,41 @@ export default function ProfilePI() {
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
         {/* Back Button */}
-        <TouchableOpacity style={styles.backButton}>
-          <Text style={styles.backButtonText}><Link href="/profile" style={styles.link}>
-          Back
-            </Link></Text>
-        </TouchableOpacity>
+        <Link href="/profile" style={styles.link}>
+          <TouchableOpacity style={styles.backButton}>
+            <Text style={styles.backButtonText}>Back</Text>
+          </TouchableOpacity>
+        </Link>
 
         {/* Profile Section */}
         <View style={styles.profileSection}>
-          <Image style={styles.profileImage} source={{ uri: user.profileImage }} />
-
-          <Text style={styles.name}>{user.firstName}</Text>
-          <Text style={styles.lastName}>{user.lastName}</Text>
-          <Text style={styles.phoneNumber}>{user.phoneNumber}</Text>
+          <View style={styles.profileImageContainer}>
+            <Image style={styles.profileImage} source={{ uri: user.profileImage }} />
+            <View style={styles.editProfileImage}>
+              <FontAwesome name="pencil" size={24} color="#fff" />
+            </View>
+          </View>
+          <View style={styles.infoContainer}>
+            <Text style={styles.label}>First name:</Text>
+            <Text style={styles.info}>{user.firstName}</Text>
+            <TouchableOpacity style={styles.editButton}>
+              <FontAwesome name="pencil" size={16} color="#fff" />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.infoContainer}>
+            <Text style={styles.label}>Last name:</Text>
+            <Text style={styles.info}>{user.lastName}</Text>
+            <TouchableOpacity style={styles.editButton}>
+              <FontAwesome name="pencil" size={16} color="#fff" />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.infoContainer}>
+            <Text style={styles.label}>Phone number:</Text>
+            <Text style={styles.info}>{user.phoneNumber}</Text>
+            <TouchableOpacity style={styles.editButton}>
+              <FontAwesome name="pencil" size={16} color="#fff" />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* History Button */}
@@ -46,7 +68,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#f4f4f4',
     padding: 20,
-    marginTop: 40,
   },
   container: {
     alignItems: 'center',
@@ -68,6 +89,11 @@ const styles = StyleSheet.create({
   profileSection: {
     alignItems: 'center',
     marginBottom: 30,
+    width: '100%',
+  },
+  profileImageContainer: {
+    position: 'relative',
+    marginBottom: 20,
   },
   profileImage: {
     width: 150,
@@ -75,22 +101,41 @@ const styles = StyleSheet.create({
     borderRadius: 75,
     borderWidth: 3,
     borderColor: '#ccc',
-    marginBottom: 20,
   },
-  name: {
-    fontSize: 24,
+  editProfileImage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  infoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+    width: '100%',
+    paddingHorizontal: 20,
+  },
+  label: {
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#333',
+    flex: 1,
   },
-  lastName: {
-    fontSize: 20,
+  info: {
+    fontSize: 16,
     color: '#555',
-    marginBottom: 10,
+    flex: 2,
   },
-  phoneNumber: {
-    fontSize: 18,
-    color: '#777',
-    marginBottom: 30,
+  editButton: {
+    backgroundColor: '#CD9594',
+    padding: 5,
+    borderRadius: 5,
+    marginLeft: 10,
   },
   historyButton: {
     width: '90%',
@@ -103,5 +148,10 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  link: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
