@@ -1,12 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert, Image } from 'react-native';
+import { View, TextInput, Button, StyleSheet, Alert, Image } from 'react-native';
 import { useRouter } from 'expo-router';
-import Cookies from 'js-cookie';
 
-const token = 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MzQwMTI5MjcsInN1YiI6IjIiLCJyb2xlIjoiVVNFUiJ9.LEhOFKH8xSB3tum115Mm6qaXecurwnD3v6cYCOtTFEg';
-Cookies.set('bearer_token', token, { expires: 1 }); // De token vervalt na 1 dag
-
-export default function signUp() {
+export default function SignUp() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -16,17 +12,16 @@ export default function signUp() {
   const router = useRouter();
 
   const handleSignUp = async () => {
-    
-    
-    if (firstName.trim().length === 0) {
-      Alert.alert('Error', 'Firstname cannot be empty');
+    // Validaties
+    if (!firstName.trim()) {
+      Alert.alert('Error', 'First name cannot be empty');
       return;
     }
-    if (lastName.trim().length === 0) {
-      Alert.alert('Error', 'Lastname cannot be empty');
+    if (!lastName.trim()) {
+      Alert.alert('Error', 'Last name cannot be empty');
       return;
     }
-    if (email.trim().length === 0) {
+    if (!email.trim()) {
       Alert.alert('Error', 'Email cannot be empty');
       return;
     }
@@ -35,43 +30,42 @@ export default function signUp() {
       return;
     }
     if (repeatPassword !== password) {
-      Alert.alert('Error', 'Password is not matching');
+      Alert.alert('Error', 'Passwords do not match');
       return;
     }
 
-    const token = Cookies.get('bearer_token'); // Haal de Bearer token uit de cookie
 
     try {
-      const response = await fetch('http://10.2.16.27:8080/user/authenticate', { // Gebruik het juiste IP-adres
+      const response = await fetch('http://10.2.88.110:8080/user/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           firstName,
           lastName,
           email,
           password,
-          phone
-        })
+          phone,
+        }),
       });
-
-      const data = await response.json();
-
+  
+      const rawData = await response.text(); // Lees de serverrespons als tekst
+      console.log('Server response:', rawData); // Log de ruwe string voor debugging
+  
       if (response.ok) {
-        Alert.alert('Success', `Welcome, ${firstName} ${lastName}!`, [
+        Alert.alert('Success', rawData, [
           {
             text: 'OK',
             onPress: () => router.push('/'),
           },
         ]);
       } else {
-        Alert.alert('Error', data.message || 'Something went wrong');
+        Alert.alert('Error', `Server Error: ${rawData}`);
       }
     } catch (error) {
-      console.error('Sign up error:', error); // Log de fout in de console
-      Alert.alert('Error', 'Failed to sign up');
+      console.error('Sign up error:', error);
+      Alert.alert('Error', 'Failed to sign up. Please try again later.');
     }
   };
 
@@ -98,6 +92,7 @@ export default function signUp() {
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
+        keyboardType="email-address"
       />
       <TextInput
         style={styles.input}
@@ -118,6 +113,7 @@ export default function signUp() {
         placeholder="Phone (optional)"
         value={phone}
         onChangeText={setPhone}
+        keyboardType="phone-pad"
       />
       <Button title="Sign Up" onPress={handleSignUp} />
     </View>
