@@ -5,7 +5,7 @@ export default function Home() {
   return (
     <View style={styles.container}>
       <Text style={styles.text}>Login Screen</Text>
-      <Link href="/login" style={styles.link}>
+      <Link href="/circle" style={styles.link}>
         Go to circle Screen
       </Link>
     </View>
