@@ -55,6 +55,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#eee',
     borderTopWidth: 1,
     borderTopColor: '#ccc',
+    marginBottom: 20,
   },
   navItem: {
     alignItems: 'center',
