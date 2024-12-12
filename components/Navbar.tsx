@@ -51,13 +51,16 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: 80,
+    height: 90,
     backgroundColor: '#eee',
     borderTopWidth: 1,
     borderTopColor: '#ccc',
-    marginBottom: 20,
+   marginTop: 30,
+    paddingBottom: 30,
+    paddingTop: 10,
   },
   navItem: {
+    
     alignItems: 'center',
     flexDirection: 'column',
   },
