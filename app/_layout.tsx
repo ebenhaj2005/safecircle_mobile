@@ -8,6 +8,7 @@ export default function RootLayout() {
     <>
     <Stack>
 
+
         <Stack.Screen name="index" options={{ title: "Home" , headerShown: false}} />
         <Stack.Screen name="circle" options={{ title: "Circle" , headerShown: false}} />
         <Stack.Screen name="map" options={{ title: "map",headerShown: false }} />
@@ -16,6 +17,7 @@ export default function RootLayout() {
         <Stack.Screen name="login" options={{ title: "login",headerShown: false }} />
         <Stack.Screen name="signUp" options={{ title: 'signUp', headerShown: false }} />     
         <Stack.Screen name="profilePI" options={{ title: "profilePI",headerShown: false }} />
+        <Stack.Screen name="passwordForget" options={{ title: 'passwordForget', headerShown: false }} />
       </Stack>
       
       {!hideNavbar && <Navbar />}

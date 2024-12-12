@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, Alert, Image } from 'react-native';
 import { Link } from 'expo-router';
 import { useRouter } from 'expo-router';
 export default function signUp() {
@@ -44,8 +44,11 @@ export default function signUp() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Sign Up</Text>
-
+   
+   <Image
+        source={require("../assets/images/safecirclelogo.png")}
+        style={{ width: 300, height: 300, marginBottom: 20 }}
+      />
       <TextInput
         style={styles.input}
         placeholder="First name"
@@ -84,7 +87,7 @@ export default function signUp() {
         onChangeText={setRepeatPassword}
    
       />
-      <Button title="Sign Up" onPress={handleSignUp} color="skyblue" />
+      <Button title="Sign Up" onPress={handleSignUp} color="#CD9594" />
 
       <Link href="/login" style={styles.link}>
         Already have an account? Go to Login
@@ -101,12 +104,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     padding: 20,
   },
-  title: {
-    fontSize: 24,
-    color: '#fff',
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
+ 
   input: {
     width: '100%',
     padding: 10,
@@ -119,7 +117,7 @@ const styles = StyleSheet.create({
   },
   link: {
     marginTop: 20,
-    color: 'skyblue',
+    color: '#CD9594',
     textDecorationLine: 'underline',
     fontSize: 16,
   },
