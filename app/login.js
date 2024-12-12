@@ -21,7 +21,7 @@ export default function LoginPage() {
     }
     Alert.alert(
       "Login Successful",
-      `Username: ${username}\nPassword: ${password}`
+      `Welcome: ${username}`
     );
     router.push("/");
   };
