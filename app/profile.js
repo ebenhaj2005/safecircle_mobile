@@ -32,12 +32,14 @@ export default function Profile() {
             </Link>
           </TouchableOpacity>
           <TouchableOpacity style={styles.button}>
-            <Link href="/profileChildren" style={styles.link}> 
-            <Text style={styles.buttonText}>Children</Text>
+            <Link href="/profileChildren" style={styles.link}>
+              <Text style={styles.buttonText}>Children</Text>
             </Link>
           </TouchableOpacity>
           <TouchableOpacity style={styles.button}>
-            <Text style={styles.buttonText}>App Settings</Text>
+            <Link href="/settings" style={styles.link}>
+              <Text style={styles.buttonText}>App Settings</Text>
+            </Link>
           </TouchableOpacity>
           <TouchableOpacity style={styles.button}>
             <Text style={styles.buttonText}>Contact</Text>
