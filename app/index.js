@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Button, Modal, Alert, TextInput } from 'react-native';
+import localImage from '../assets/images/geenBackground.png'
 import { Link } from 'expo-router';
 
 export default function Home() {
@@ -52,11 +53,11 @@ export default function Home() {
         <>
           <Text style={styles.timerText}>Timer: {timer}s</Text>
           <TouchableOpacity style={styles.button} onPress={handleStopSOS}>
-            <Image
+            {/* <Image
               source={{ uri: 'https://example.com/stop-image.png' }} // Vervang door de juiste URL van de stop-afbeelding
               style={styles.buttonImage}
               resizeMode="cover"
-            />
+            /> */}
             <Text style={styles.stopText}>STOP</Text>
           </TouchableOpacity>
         </>
@@ -65,7 +66,7 @@ export default function Home() {
           <Text style={styles.text}>Push for Emergency</Text>
           <TouchableOpacity style={styles.button} onPress={handleEmergencyPress}>
             <Image
-              source={{ uri: 'https://cdn.discordapp.com/attachments/1303712916754796574/1316339579799998475/afbeelding_rood-removebg-preview.png?ex=675ab044&is=67595ec4&hm=02868033c5f3210447adad5383875a849ecaa39385f164144538335792f8d4f2&' }}
+              source={localImage}
               style={styles.buttonImage}
               resizeMode="cover"
             />
@@ -198,6 +199,7 @@ export default function Home() {
         </View>
       </Modal>
     </ScrollView>
+
   );
 }
 
@@ -207,6 +209,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-start",
     alignItems: "center",
     paddingTop: 50,
+    marginTop: 50,
   },
   text: {
     fontSize: 24,

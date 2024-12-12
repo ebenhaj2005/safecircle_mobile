@@ -1,6 +1,14 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
-import { Link } from "expo-router";
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  StyleSheet,
+  Alert,
+  Image
+} from "react-native";
+import { Link, router } from "expo-router";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -13,13 +21,17 @@ export default function LoginPage() {
     }
     Alert.alert(
       "Login Successful",
-      `Username: ${username}\nPassword: ${password}`
+      `Welcome: ${username}`
     );
+    router.push("/");
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Login Screen</Text>
+      <Image
+        source={require("../assets/images/safecirclelogo.png")}
+        style={{ width: 300, height: 300 ,marginBottom: 20 }}
+      />
 
       <TextInput
         style={styles.input}
@@ -35,8 +47,10 @@ export default function LoginPage() {
         value={password}
         onChangeText={setPassword}
       />
-
-      <Button title="Login" onPress={handleLogin} color="skyblue" />
+      <Link href="/passwordForget" style={styles.recovery}>
+        Forgot Password?
+      </Link>
+      <Button title="Login" onPress={handleLogin} color="#CD9594" />
 
       <Link href="/signUp" style={styles.link}>
         Don't have an account? Sign Up
@@ -53,6 +67,8 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     padding: 20,
   },
+
+
   text: {
     color: "black",
     fontSize: 20,
@@ -65,13 +81,24 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 5,
-    color: "#fff",
+    color: "black",
     backgroundColor: "white",
   },
   link: {
     marginTop: 20,
-    color: "skyblue",
+    color: "#CD9594",
     textDecorationLine: "underline",
     fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 50,
+  },
+  recovery: {
+    float: "right",
+    color: "#CD9594",
+    textDecorationLine: "underline",
+    fontSize: 13,
+
+    fontWeight: "bold",
+    marginBottom: 50,
   },
 });

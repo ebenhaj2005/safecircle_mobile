@@ -47,7 +47,9 @@ export default function Profile() {
             </Link>
           </TouchableOpacity>
           <TouchableOpacity style={styles.button}>
+            <Link href="/login" style={styles.link}>
             <Text style={styles.buttonText}>Log Out</Text>
+            </Link>
           </TouchableOpacity>
         </View>
       </View>
