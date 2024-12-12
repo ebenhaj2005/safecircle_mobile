@@ -34,7 +34,9 @@ export default function Profile() {
             <Text style={styles.buttonText}>Contact</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.button}>
+            <Link href="/login" style={styles.link}>
             <Text style={styles.buttonText}>Log Out</Text>
+            </Link>
           </TouchableOpacity>
         </View>
       </View>
