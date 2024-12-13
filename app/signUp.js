@@ -36,8 +36,7 @@ export default function SignUp() {
 
 
     try {
-      const response = await fetch('http://10.2.88.110:8080/user/create', {
-        method: 'POST',
+      const response = await fetch('http://192.168.0.108:8080/user/create', { // IP-adres van je thuis wifi (ipconfig)
         headers: {
           'Content-Type': 'application/json',
         },

@@ -9,22 +9,50 @@ import {
   Image
 } from "react-native";
 import { Link, router } from "expo-router";
+import { jwtDecode } from "jwt-decode";
+
 
 export default function LoginPage() {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [userId, setUserId] = useState(null); 
 
-  const handleLogin = () => {
-    if (username === "" || password === "") {
-      Alert.alert("Error", "Please enter both username and password");
+  const handleLogin = async () => {
+    if (email === "" || password === "") {
+      Alert.alert("Error", "Please enter both email and password");
       return;
     }
-    Alert.alert(
-      "Login Successful",
-      `Welcome: ${username}`
-    );
-    router.push("/");
+  
+    try {
+      const response = await fetch('http://192.168.0.108:8080/user/authenticate', { // IP-adres van je thuis wifi
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+  
+      const responseText = await response.text();
+      console.log("Server response:", responseText);
+  
+      if (response.ok) {
+        // Decode the JWT
+        const decoded = jwtDecode(responseText);
+        const userId = decoded.sub; 
+        
+  
+        setUserId(userId); // Opslaan van userId in de state
+        Alert.alert("Login Successful", `Welcome: ${email}`);
+        router.push("/");
+      } else {
+        Alert.alert("Error", "Login failed. Please check your credentials.");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      Alert.alert("Error", "Failed to login. Please try again later.");
+    }
   };
+  
 
   return (
     <View style={styles.container}>
@@ -35,26 +63,19 @@ export default function LoginPage() {
 
       <TextInput
         style={styles.input}
-        placeholder="Username"
-        value={username}
-        onChangeText={setUsername}
+        placeholder="Email"
+        value={email}
+        onChangeText={setEmail}
       />
-
       <TextInput
         style={styles.input}
         placeholder="Password"
-        secureTextEntry
         value={password}
         onChangeText={setPassword}
+        secureTextEntry
       />
-      <Link href="/passwordForget" style={styles.recovery}>
-        Forgot Password?
-      </Link>
-      <Button title="Login" onPress={handleLogin} color="#CD9594" />
-
-      <Link href="/signUp" style={styles.link}>
-        Don't have an account? Sign Up
-      </Link>
+      <Button title="Login" onPress={handleLogin} />
+      <Link href="/signUp">Don't have an account? Sign up</Link>
     </View>
   );
 }
@@ -62,43 +83,14 @@ export default function LoginPage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "white",
-    padding: 20,
-  },
-
-
-  text: {
-    color: "black",
-    fontSize: 20,
-    marginBottom: 20,
+    justifyContent: 'center',
+    padding: 16,
   },
   input: {
-    width: "100%",
-    padding: 10,
-    marginBottom: 15,
+    height: 40,
+    borderColor: 'gray',
     borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 5,
-    color: "black",
-    backgroundColor: "white",
-  },
-  link: {
-    marginTop: 20,
-    color: "#CD9594",
-    textDecorationLine: "underline",
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 50,
-  },
-  recovery: {
-    float: "right",
-    color: "#CD9594",
-    textDecorationLine: "underline",
-    fontSize: 13,
-
-    fontWeight: "bold",
-    marginBottom: 50,
+    marginBottom: 12,
+    paddingHorizontal: 8,
   },
 });
