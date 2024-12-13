@@ -1,9 +1,10 @@
+import React from "react";
 import { Stack, useSegments } from "expo-router";
 import Navbar from "../components/Navbar";
 
 export default function RootLayout() {
   const segments: string[] = useSegments();
-  const hideNavbar = segments.includes("login") || segments.includes("signUp") || segments.includes("passwordForget") || segments.includes("eventrequestpage");
+  const hideNavbar = segments.includes("login") || segments.includes("signUp") || segments.includes("passwordForget") || segments.includes("eventrequestpage")|| segments.includes("profileAddChild")|| segments.includes("profileChildren")|| segments.includes("profileHistory")|| segments.includes("settings")|| segments.includes("contact")|| segments.includes("profilePI");
   return (
     <>
     <Stack>
@@ -19,6 +20,11 @@ export default function RootLayout() {
         <Stack.Screen name="profilePI" options={{ title: "profilePI",headerShown: false }} />
         <Stack.Screen name="passwordForget" options={{ title: 'passwordForget', headerShown: false }} />
         <Stack.Screen name="eventrequestpage" options={{ title: 'eventrequestpage', headerShown: false }} />
+        <Stack.Screen name="profileHistory" options={{ title: "profileHistory",headerShown: false }} />
+        <Stack.Screen name="profileChildren" options={{ title: "profileChildren",headerShown: false }} />
+        <Stack.Screen name="profileAddChild" options={{ title: "profileAddChild",headerShown: false }} />
+        <Stack.Screen name="settings" options={{ title: "settings",headerShown: false }} />
+        <Stack.Screen name="contact" options={{ title: "contact",headerShown: false }} />
       </Stack>
       
       {!hideNavbar && <Navbar />}
