@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-start",
     alignItems: "center",
     paddingTop: 50,
-    marginTop: 50,
+    marginTop: 10,
   },
   text: {
     fontSize: 24,
@@ -299,10 +299,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     backgroundColor: "#CD9594",
     borderRadius: 5,
+marginBottom: 20,
   },
   sendButtonText: {
     color: "white",
     fontSize: 16,
+    
   },
   modalContainer: {
     flex: 1,
