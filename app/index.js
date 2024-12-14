@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Button, Modal, Alert, TextInput } from 'react-native';
-import localImage from '../assets/images/geenBackground.png'
+import localImage from '../assets/images/geenBackground.png';
 import { Link } from 'expo-router';
 
 export default function Home() {
@@ -11,6 +11,7 @@ export default function Home() {
   const [sosSent, setSosSent] = useState(false);
   const [timer, setTimer] = useState(0);
   const [intervalId, setIntervalId] = useState(null);
+  const [selectedCheckboxes, setSelectedCheckboxes] = useState({}); // For select boxes
 
   useEffect(() => {
     let interval;
@@ -58,6 +59,13 @@ export default function Home() {
     return () => clearInterval(locationInterval);
   }, [sosSent]);
 
+  const toggleCheckbox = (key) => {
+    setSelectedCheckboxes((prev) => ({
+      ...prev,
+      [key]: !prev[key], // Toggle between true and false
+    }));
+  };
+
   const handleEmergencyPress = () => {
     setModalContent('emergency');
     setModalVisible(true);
@@ -85,18 +93,12 @@ export default function Home() {
     setModalVisible(false);
   };
 
-
   return (
     <ScrollView contentContainerStyle={styles.container}>
       {sosSent ? (
         <>
           <Text style={styles.timerText}>Timer: {timer}s</Text>
           <TouchableOpacity style={styles.button} onPress={handleStopSOS}>
-            {/* <Image
-              source={{ uri: 'https://example.com/stop-image.png' }} // Vervang door de juiste URL van de stop-afbeelding
-              style={styles.buttonImage}
-              resizeMode="cover"
-            /> */}
             <Text style={styles.stopText}>STOP</Text>
           </TouchableOpacity>
         </>
@@ -115,35 +117,18 @@ export default function Home() {
       <View style={styles.separator} />
       <Text style={styles.subText}>Feeling Unsafe</Text>
       <View style={styles.checklist}>
-        <View style={styles.checklistItem}>
-          <View style={styles.checkbox} />
-          <Text style={styles.checklistText}>Circle 1</Text>
-        </View>
-        <View style={styles.checklistItem}>
-          <View style={styles.checkbox} />
-          <Text style={styles.checklistText}>Circle 2</Text>
-        </View>
-        <View style={styles.checklistItem}>
-          <View style={styles.checkbox} />
-          <Text style={styles.checklistText}>Circle 3</Text>
-        </View>
-        <View style={styles.checklistItem}>
-          <View style={styles.checkbox} />
-          <Text style={styles.checklistText}>Circle 4</Text>
-        </View>
-        <View style={styles.checklistItem}>
-          <View style={styles.checkbox} />
-          <Text style={styles.checklistText}>Circle 5</Text>
-        </View>
-        <View style={styles.separator} />
-        <View style={styles.checklistItem}>
-          <View style={styles.checkbox} />
-          <Text style={styles.checklistText}>Tomorrowland</Text>
-        </View>
-        <View style={styles.checklistItem}>
-          <View style={styles.checkbox} />
-          <Text style={styles.checklistText}>Graspop</Text>
-        </View>
+        {["Circle 1", "Circle 2", "Circle 3", "Circle 4", "Circle 5", "Tomorrowland", "Graspop"].map((item, index) => (
+          <TouchableOpacity
+            key={index}
+            style={styles.checklistItem}
+            onPress={() => toggleCheckbox(item)}
+          >
+            <View style={[styles.checkbox, selectedCheckboxes[item] && styles.checkboxSelected]}>
+              {selectedCheckboxes[item] && <Text style={styles.checkboxMark}>✔</Text>}
+            </View>
+            <Text style={styles.checklistText}>{item}</Text>
+          </TouchableOpacity>
+        ))}
       </View>
       <TouchableOpacity style={styles.sendButton} onPress={handleSendPress}>
         <Text style={styles.sendButtonText}>Send</Text>
@@ -163,22 +148,18 @@ export default function Home() {
               <>
                 <Text style={styles.modalText}>Select the best matching description:</Text>
                 <View style={styles.modalChecklist}>
-                  <View style={styles.checklistItem}>
-                    <View style={styles.checkbox} />
-                    <Text style={styles.checklistText}>Medical Emergencies</Text>
-                  </View>
-                  <View style={styles.checklistItem}>
-                    <View style={styles.checkbox} />
-                    <Text style={styles.checklistText}>Accidents</Text>
-                  </View>
-                  <View style={styles.checklistItem}>
-                    <View style={styles.checkbox} />
-                    <Text style={styles.checklistText}>Fire-Related Incidents</Text>
-                  </View>
-                  <View style={styles.checklistItem}>
-                    <View style={styles.checkbox} />
-                    <Text style={styles.checklistText}>Crimes or Safety Incidents</Text>
-                  </View>
+                  {["Medical Emergencies", "Accidents", "Fire-Related Incidents", "Crimes or Safety Incidents"].map((item, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      style={styles.checklistItem}
+                      onPress={() => toggleCheckbox(item)}
+                    >
+                      <View style={[styles.checkbox, selectedCheckboxes[item] && styles.checkboxSelected]}>
+                        {selectedCheckboxes[item] && <Text style={styles.checkboxMark}>✔</Text>}
+                      </View>
+                      <Text style={styles.checklistText}>{item}</Text>
+                    </TouchableOpacity>
+                  ))}
                 </View>
                 <View style={styles.modalButtonContainer}>
                   <Button
@@ -203,24 +184,18 @@ export default function Home() {
                   onChangeText={setDescription}
                 />
                 <Text style={styles.modalText}>Select the duration of the unsafe feeling:</Text>
-                <View style={styles.modalChecklist}>
-                  <TouchableOpacity style={styles.checklistItem} onPress={() => setDuration('30min')}>
-                    <View style={styles.checkbox} />
-                    <Text style={styles.checklistText}>30min</Text>
+                {["30min", "1 hour", "2 hours", "8 hours"].map((time, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.checklistItem}
+                    onPress={() => setDuration(time)}
+                  >
+                    <View style={[styles.checkbox, duration === time && styles.checkboxSelected]}>
+                      {duration === time && <Text style={styles.checkboxMark}>✔</Text>}
+                    </View>
+                    <Text style={styles.checklistText}>{time}</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.checklistItem} onPress={() => setDuration('1 hour')}>
-                    <View style={styles.checkbox} />
-                    <Text style={styles.checklistText}>1 hour</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.checklistItem} onPress={() => setDuration('2 hours')}>
-                    <View style={styles.checkbox} />
-                    <Text style={styles.checklistText}>2 hours</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.checklistItem} onPress={() => setDuration('8 hours')}>
-                    <View style={styles.checkbox} />
-                    <Text style={styles.checklistText}>8 hours</Text>
-                  </TouchableOpacity>
-                </View>
+                ))}
                 <View style={styles.modalButtonContainer}>
                   <Button
                     title="Close"
@@ -238,7 +213,6 @@ export default function Home() {
         </View>
       </Modal>
     </ScrollView>
-
   );
 }
 
@@ -303,6 +277,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#CD9594",
     marginRight: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 4,
+    backgroundColor: "#fff",
+  },
+  checkboxSelected: {
+    backgroundColor: "#CD9594",
+  },
+  checkboxMark: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 16,
   },
   checklistText: {
     fontSize: 16,
