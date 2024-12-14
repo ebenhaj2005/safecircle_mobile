@@ -10,6 +10,7 @@ export default function Home() {
   const [duration, setDuration] = useState('');
   const [sosSent, setSosSent] = useState(false);
   const [timer, setTimer] = useState(0);
+  const [intervalId, setIntervalId] = useState(null);
 
   useEffect(() => {
     let interval;
@@ -17,8 +18,44 @@ export default function Home() {
       interval = setInterval(() => {
         setTimer(prevTimer => prevTimer + 1);
       }, 1000);
+      setIntervalId(interval);
+    } else if (intervalId) {
+      clearInterval(intervalId);
+      setIntervalId(null);
     }
     return () => clearInterval(interval);
+  }, [sosSent]);
+
+  const sendLocationToFirebase = async () => {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission to access location was denied');
+        return;
+      }
+
+      const location = await Location.getCurrentPositionAsync({});
+      const { latitude, longitude } = location.coords;
+
+      await addDoc(collection(db, "locations"), {
+        latitude,
+        longitude,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Error sending location: ", error);
+    }
+  };
+
+  useEffect(() => {
+    let locationInterval;
+    if (sosSent) {
+      locationInterval = setInterval(() => {
+        sendLocationToFirebase();
+      }, 60000); // Elke 60 seconden
+    }
+
+    return () => clearInterval(locationInterval);
   }, [sosSent]);
 
   const handleEmergencyPress = () => {
@@ -34,6 +71,7 @@ export default function Home() {
   const handleSendSOS = () => {
     Alert.alert("SOS sent!");
     setSosSent(true);
+    sendLocationToFirebase(); // Directe eerste locatie-update
     setModalVisible(false);
   };
 
@@ -46,6 +84,7 @@ export default function Home() {
     Alert.alert(`Description: ${description}\nDuration: ${duration}`);
     setModalVisible(false);
   };
+
 
   return (
     <ScrollView contentContainerStyle={styles.container}>

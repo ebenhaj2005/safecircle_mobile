@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "72499410897",
+    "project_id": "alertsending-db13a",
+    "storage_bucket": "alertsending-db13a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:72499410897:android:346677f91196b9824d92f0",
+        "android_client_info": {
+          "package_name": "com.safecircle"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAnz5rmuTvLNpPXDJBfR6OzIlCJXiCRkwA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
