@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Link, usePathname } from 'expo-router';
+
 const Icon = require('react-native-vector-icons/FontAwesome').default;
 
 const Navbar = () => {
