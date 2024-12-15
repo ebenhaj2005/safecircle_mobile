@@ -19,6 +19,8 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [userId, setUserId] = useState(null); 
+  const [accessToken, setAccessToken] = useState(null);
+  const [refreshToken, setRefreshToken] = useState(null);
 
   const handleLogin = async () => {
     if (email === "" || password === "") {
@@ -27,7 +29,7 @@ export default function LoginPage() {
     }
   
     try {
-      const response = await fetch('http://192.168.0.108:8080/user/authenticate', { // IP-adres van je thuis wifi
+      const response = await fetch('http://192.168.0.110:8080/user/authenticate', { // IP-adres van je thuis wifi
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -36,20 +38,59 @@ export default function LoginPage() {
       });
   
       const responseText = await response.text();
-      console.log("Server response:", responseText);
+      const responseData = responseText ? JSON.parse(responseText) : null;
+      console.log("Server response:", responseData);
   
       if (response.ok) {
-        // Decode the JWT
-        const decoded = jwtDecode(responseText);
-        const userId = decoded.sub;
-        setUserId(userId);
-        // Navigate to another page or perform other actions
+        if (responseData) {
+          const { accessToken, refreshToken } = responseData;
+          setAccessToken(accessToken);
+          setRefreshToken(refreshToken);
+          const decodedToken = jwtDecode(accessToken);
+          setUserId(decodedToken.userId);
+          // Navigate to the next screen or perform other actions
+        } else {
+          Alert.alert("Error", "Failed to parse server response");
+        }
       } else {
-        Alert.alert("Error", "Invalid email or password");
+        Alert.alert("Error", responseData?.message || "Login failed");
       }
     } catch (error) {
-      console.error("Error during login:", error);
+      console.error("Login error:", error);
       Alert.alert("Error", "An error occurred during login");
+    }
+  };
+
+  const refreshTokens = async () => {
+    try {
+      const response = await fetch('http://192.168.0.110:8080/user/refresh-token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ refreshToken }),
+      });
+
+      const responseText = await response.text();
+      const responseData = responseText ? JSON.parse(responseText) : null;
+      console.log("Refresh response:", responseData);
+
+      if (response.ok) {
+        if (responseData) {
+          const { accessToken, refreshToken } = responseData;
+          setAccessToken(accessToken);
+          setRefreshToken(refreshToken);
+          const decodedToken = jwtDecode(accessToken);
+          setUserId(decodedToken.userId);
+        } else {
+          Alert.alert("Error", "Failed to parse server response");
+        }
+      } else {
+        Alert.alert("Error", responseData?.message || "Token refresh failed");
+      }
+    } catch (error) {
+      console.error("Token refresh error:", error);
+      Alert.alert("Error", "An error occurred during token refresh");
     }
   };
 
@@ -59,7 +100,7 @@ export default function LoginPage() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView contentContainerStyle={styles.container}>
-        <Image source={logo} style={styles.logo} /> {/* Use the imported image variable */}
+        <Image source={logo} style={styles.logo} /> 
         <Text style={styles.title}>Login</Text>
         <TextInput
           style={styles.input}
