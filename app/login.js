@@ -6,11 +6,14 @@ import {
   Button,
   StyleSheet,
   Alert,
-  Image
+  Image,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform
 } from "react-native";
 import { Link, router } from "expo-router";
-import { jwtDecode } from "jwt-decode";
-
+import jwtDecode from "jwt-decode";
+import logo from '../assets/images/geenBackground.png'; // Import the image at the top
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -38,59 +41,76 @@ export default function LoginPage() {
       if (response.ok) {
         // Decode the JWT
         const decoded = jwtDecode(responseText);
-        const userId = decoded.sub; 
-        
-  
-        setUserId(userId); // Opslaan van userId in de state
-        Alert.alert("Login Successful", `Welcome: ${email}`);
-        router.push("/");
+        const userId = decoded.sub;
+        setUserId(userId);
+        // Navigate to another page or perform other actions
       } else {
-        Alert.alert("Error", "Login failed. Please check your credentials.");
+        Alert.alert("Error", "Invalid email or password");
       }
     } catch (error) {
-      console.error("Login error:", error);
-      Alert.alert("Error", "Failed to login. Please try again later.");
+      console.error("Error during login:", error);
+      Alert.alert("Error", "An error occurred during login");
     }
   };
-  
 
   return (
-    <View style={styles.container}>
-      <Image
-        source={require("../assets/images/safecirclelogo.png")}
-        style={{ width: 300, height: 300 ,marginBottom: 20 }}
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-      <Button title="Login" onPress={handleLogin} />
-      <Link href="/signUp">Don't have an account? Sign up</Link>
-    </View>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <ScrollView contentContainerStyle={styles.container}>
+        <Image source={logo} style={styles.logo} /> {/* Use the imported image variable */}
+        <Text style={styles.title}>Login</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          placeholderTextColor="#888"
+          value={email}
+          onChangeText={setEmail}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          placeholderTextColor="#888"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+        />
+        <Button title="Login" onPress={handleLogin} color="#CD9594" />
+        <Link href="/signUp" style={styles.link}><Text>Don't have an account? Register</Text></Link>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: 'center',
+    alignItems: 'center',
     padding: 16,
+    backgroundColor: '#fff',
+  },
+  logo: {
+    width: 200,
+    height: 200,
+    marginBottom: 32,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 24,
   },
   input: {
-    height: 40,
-    borderColor: 'gray',
+    width: '100%',
+    padding: 12,
     borderWidth: 1,
-    marginBottom: 12,
-    paddingHorizontal: 8,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  link: {
+    marginTop: 16,
+    color: '#007BFF',
   },
 });

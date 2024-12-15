@@ -1,18 +1,29 @@
-import React, { useState } from 'react';
-import { View, TextInput, Button, StyleSheet, Alert, Image } from 'react-native';
-import { useRouter } from 'expo-router';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  StyleSheet,
+  Alert,
+  Image,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform
+} from "react-native";
+import { Link, router } from "expo-router";
+import logo from '../assets/images/geenBackground.png'; // Import the image at the top
 
-export default function SignUp() {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [repeatPassword, setRepeatPassword] = useState('');
-  const [phone, setPhone] = useState('');
-  const router = useRouter();
+export default function SignUpPage() {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [repeatPassword, setRepeatPassword] = useState("");
+  const [phone, setPhone] = useState("");
 
   const handleSignUp = async () => {
-    // Validaties
+    // Validations
     if (!firstName.trim()) {
       Alert.alert('Error', 'First name cannot be empty');
       return;
@@ -34,9 +45,9 @@ export default function SignUp() {
       return;
     }
 
-
     try {
       const response = await fetch('http://192.168.0.108:8080/user/create', { // IP-adres van je thuis wifi (ipconfig)
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -53,83 +64,105 @@ export default function SignUp() {
       console.log('Server response:', rawData); // Log de ruwe string voor debugging
   
       if (response.ok) {
-        Alert.alert('Success', rawData, [
-          {
-            text: 'OK',
-            onPress: () => router.push('/'),
-          },
-        ]);
+        Alert.alert('Success', 'Account created successfully');
+        // Navigate to another page or perform other actions
       } else {
-        Alert.alert('Error', `Server Error: ${rawData}`);
+        Alert.alert('Error', 'Failed to create account');
       }
     } catch (error) {
-      console.error('Sign up error:', error);
-      Alert.alert('Error', 'Failed to sign up. Please try again later.');
+      console.error('Error during sign-up:', error);
+      Alert.alert('Error', 'An error occurred during sign-up');
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Image
-        source={require("../assets/images/safecirclelogo.png")}
-        style={{ width: 300, height: 300, marginBottom: 20 }}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="First name"
-        value={firstName}
-        onChangeText={setFirstName}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Last name"
-        value={lastName}
-        onChangeText={setLastName}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Repeat Password"
-        value={repeatPassword}
-        onChangeText={setRepeatPassword}
-        secureTextEntry
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Phone (optional)"
-        value={phone}
-        onChangeText={setPhone}
-        keyboardType="phone-pad"
-      />
-      <Button title="Sign Up" onPress={handleSignUp} />
-    </View>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <ScrollView contentContainerStyle={styles.container}>
+        <Image source={logo} style={styles.logo} /> {/* Use the imported image variable */}
+        <Text style={styles.title}>Sign Up</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="First Name"
+          placeholderTextColor="#888"
+          value={firstName}
+          onChangeText={setFirstName}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Last Name"
+          placeholderTextColor="#888"
+          value={lastName}
+          onChangeText={setLastName}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          placeholderTextColor="#888"
+          value={email}
+          onChangeText={setEmail}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          placeholderTextColor="#888"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Repeat Password"
+          placeholderTextColor="#888"
+          value={repeatPassword}
+          onChangeText={setRepeatPassword}
+          secureTextEntry
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Phone (optional)"
+          placeholderTextColor="#888"
+          value={phone}
+          onChangeText={setPhone}
+          keyboardType="phone-pad"
+        />
+        <Button title="Sign Up" onPress={handleSignUp} color="#CD9594" />
+        <Link href="/login" style={styles.link}><Text>Already have an account? Login</Text></Link>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: 'center',
+    alignItems: 'center',
     padding: 16,
+    backgroundColor: '#fff',
+  },
+  logo: {
+    width: 300,
+    height: 200,
+    marginBottom: 32,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 24,
   },
   input: {
-    height: 40,
-    borderColor: 'gray',
+    width: '100%',
+    padding: 12,
     borderWidth: 1,
-    marginBottom: 12,
-    paddingHorizontal: 8,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  link: {
+    marginTop: 16,
+    color: '#007BFF',
   },
 });
