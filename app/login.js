@@ -38,7 +38,7 @@ export default function LoginPage() {
       });
   
       const responseText = await response.text();
-      console.log("Server response text:", responseText);
+      //console.log("Server response text:", responseText);
   
       let responseData;
       try {
@@ -47,7 +47,7 @@ export default function LoginPage() {
         responseData = null;
       }
   
-      console.log("Server response JSON:", responseData);
+      //console.log("Server response JSON:", responseData);
   
       if (response.ok) {
         if (responseData) {
@@ -71,7 +71,7 @@ export default function LoginPage() {
         Alert.alert("Error", responseData?.message || responseText || "Login failed");
       }
     } catch (error) {
-      console.error("Login error:", error);
+      //console.error("Login error:", error);
       Alert.alert("Error", "An error occurred during login");
     }
   };
@@ -88,7 +88,7 @@ export default function LoginPage() {
 
       const responseText = await response.text();
       const responseData = responseText ? JSON.parse(responseText) : null;
-      console.log("Refresh response:", responseData);
+      //console.log("Refresh response:", responseData);
 
       if (response.ok) {
         if (responseData) {
