@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Button, Modal, Alert, TextInput } from 'react-native';
 import localImage from '../assets/images/geenBackground.png';
-import { Link } from 'expo-router';
+import * as Location from 'expo-location';
 
 export default function Home() {
   const [modalVisible, setModalVisible] = useState(false);
@@ -12,6 +12,8 @@ export default function Home() {
   const [timer, setTimer] = useState(0);
   const [intervalId, setIntervalId] = useState(null);
   const [selectedCheckboxes, setSelectedCheckboxes] = useState({}); // For select boxes
+  const token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0Iiwicm9sZSI6IlVTRVIiLCJ0eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM0NTM2MzExfQ.LW7SNfbFOIxId1mkFLWfKDrE4yTTaT0S-bHKr4y3t2w";
+  const url = `http://10.2.88.221:8080/location/{userId}`;
 
   useEffect(() => {
     let interval;
@@ -27,6 +29,31 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [sosSent]);
 
+  const sendLocationToBackend = async (latitude, longitude) => {
+    const userId = 4; // The userId should be dynamically set, possibly from logged-in user data
+    const token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0Iiwicm9sZSI6IlVTRVIiLCJ0eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM0NTM2MzExfQ.LW7SNfbFOIxId1mkFLWfKDrE4yTTaT0S-bHKr4y3t2w"; // tijdelijk jwt token voor testen
+
+    try {
+      const response = await fetch(`http://10.2.88.221:8080/location/${userId}?latitude=${latitude}&longitude=${longitude}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`, // Include token in the Authorization header
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        console.log('Location updated successfully');
+      } else {
+        console.error('Error updating location', response.statusText);
+        Alert.alert('Failed to update location');
+      }
+    } catch (error) {
+      console.error('Error sending location to backend', error);
+      Alert.alert('Error updating location');
+    }
+  };
+
   const sendLocationToFirebase = async () => {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -38,11 +65,15 @@ export default function Home() {
       const location = await Location.getCurrentPositionAsync({});
       const { latitude, longitude } = location.coords;
 
+      // Send the location to Firebase (as you already do)
       await addDoc(collection(db, "locations"), {
         latitude,
         longitude,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
+
+      // Send the location to the backend as well
+      sendLocationToBackend(latitude, longitude);
     } catch (error) {
       console.error("Error sending location: ", error);
     }
@@ -239,8 +270,8 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   buttonImage: {
-    width: "130%", // Groter dan de knop
-    height: "130%", // Groter dan de knop
+    width: "130%",
+    height: "130%",
     top: "3%",
   },
   stopText: {
@@ -255,67 +286,61 @@ const styles = StyleSheet.create({
   },
   separator: {
     width: "80%",
-    height: 1,
-    backgroundColor: "#ccc",
-    marginVertical: 20,
+    height: 2,
+    backgroundColor: "#DDDDDD",
+    marginBottom: 20,
   },
   subText: {
     fontSize: 20,
-    marginBottom: 10,
+    marginBottom: 20,
   },
   checklist: {
-    alignItems: "flex-start",
+    marginBottom: 20,
   },
   checklistItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 5,
   },
   checkbox: {
     width: 20,
     height: 20,
     borderWidth: 1,
-    borderColor: "#CD9594",
+    borderColor: "#000",
+    borderRadius: 3,
     marginRight: 10,
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 4,
-    backgroundColor: "#fff",
   },
   checkboxSelected: {
-    backgroundColor: "#CD9594",
+    backgroundColor: '#000',
   },
   checkboxMark: {
-    color: "white",
-    fontWeight: "bold",
-    fontSize: 16,
+    color: '#fff',
+    textAlign: 'center',
+    fontSize: 14,
   },
   checklistText: {
-    fontSize: 16,
+    fontSize: 18,
   },
   sendButton: {
-    marginTop: 20,
+    backgroundColor: '#CD9594',
     paddingVertical: 10,
     paddingHorizontal: 20,
-    backgroundColor: "#CD9594",
-    borderRadius: 5,
-marginBottom: 20,
+    borderRadius: 10,
   },
   sendButtonText: {
-    color: "white",
-    fontSize: 16,
-    
+    fontSize: 18,
+    color: 'white',
   },
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
   },
   modalView: {
     width: 300,
-    padding: 20,
     backgroundColor: 'white',
+    padding: 20,
     borderRadius: 10,
     alignItems: 'center',
   },
@@ -324,20 +349,17 @@ marginBottom: 20,
     marginBottom: 20,
   },
   modalChecklist: {
-    alignItems: "flex-start",
+    marginBottom: 20,
+  },
+  textInput: {
+    borderWidth: 1,
+    width: '100%',
+    padding: 10,
     marginBottom: 20,
   },
   modalButtonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
-  },
-  textInput: {
-    width: '100%',
-    height: 40,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    marginBottom: 20,
-    paddingHorizontal: 10,
   },
 });
