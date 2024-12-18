@@ -1,38 +1,41 @@
-import React, { useEffect } from "react";
-import { Alert } from "react-native";
-import { requestPermission, getFcmToken, setupNotificationListeners } from "./firebaseSetup";
+import React, { useEffect } from 'react';
+import { View, Text } from 'react-native';
+import * as Notifications from 'expo-notifications';
+import { getPermissionsAsync, requestPermissionsAsync } from 'expo-notifications';
 
 export default function App() {
   useEffect(() => {
-    async function setupFirebase() {
-      const hasPermission = await requestPermission();
-      if (hasPermission) {
-        const token = await getFcmToken();
-        console.log("Device FCM Token:", token);
+    (async () => {
+      const { status } = await getPermissionsAsync();
 
-        // You can send this token to your backend for notifications
-        await sendTokenToBackend(token); 
-      } else {
-        Alert.alert("Permission Denied", "Enable notifications in settings.");
+      if (status !== 'granted') {
+        const { status: newStatus } = await requestPermissionsAsync();
+        if (newStatus !== 'granted') {
+          console.log('Push notification permissions denied');
+          return;
+        }
       }
 
-      // Set up notification listeners
-      setupNotificationListeners();
-    }
+      // Haal de token op
+      const token = await Notifications.getExpoPushTokenAsync();
+      console.log('FCM Token:', token);
 
-    setupFirebase();
+      try {
+        // Stuur de token naar je backend-server of direct naar Firebase
+        await fetch('https://10.2.88.152:8080/user/register-token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            token: token,
+          }),
+        });
+      } catch (error) {
+        console.log('Fout bij verzenden van de token:', error.message);
+      }
+    })();
   }, []);
 
-  async function sendTokenToBackend(token) {
-    // Example API call
-    await fetch("http://192.168.0.108:8080/api/users/register-token", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ fcmToken: token }),
-    });
-  }
-
-  return null; // Your App UI
+  return <View><Text>Push notificatie actief</Text></View>;
 }
