@@ -15,7 +15,7 @@ export default function Home() {
   const [intervalId, setIntervalId] = useState(null);
   const [selectedCheckboxes, setSelectedCheckboxes] = useState({}); // For select boxes
 
-
+  const userId = 3;  
   useEffect(() => {
     const getPushToken = async () => {
       try {
@@ -30,13 +30,14 @@ export default function Home() {
           }
         }
   
+        console.log('Push-notificatie-permissie verleend');
+  
         const token = await Notifications.getExpoPushTokenAsync({
-          projectId: "e6eaafe3-e57c-499b-9782-d0e460a3f22e"  // Handmatig project ID doorgeven
+          projectId: "e6eaafe3-e57c-499b-9782-d0e460a3f22e",
         });
-
         console.log('Push Token:', token);
   
-        await fetch('https://10.2.88.152:8080/user/register-token', {
+        await fetch(`https://192.168.0.110:8080/${userId}/register-token`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ token }),
@@ -48,6 +49,7 @@ export default function Home() {
   
     getPushToken();
   }, []);
+  
 
   useEffect(() => {
     let interval;
@@ -95,6 +97,20 @@ export default function Home() {
     return () => clearInterval(locationInterval);
   }, [sosSent]);
 
+
+  const sendPushNotification = async () => {
+    try {
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: "SOS Alert",
+          body: "Noodmelding verzonden! Druk op STOP om te annuleren.",
+        },
+        trigger: null, // Direct verzenden
+      });
+    } catch (error) {
+      console.error("Failed to send notification:", error);
+    }
+  };
   const toggleCheckbox = (key) => {
     setSelectedCheckboxes((prev) => ({
       ...prev,
@@ -113,9 +129,10 @@ export default function Home() {
   };
 
   const handleSendSOS = () => {
-    Alert.alert("SOS sent!");
+    Alert.alert("SOS verzonden!");
     setSosSent(true);
-    sendLocationToFirebase(); // Directe eerste locatie-update
+    //sendLocationToFirebase(); // Directe eerste locatie-update
+    sendPushNotification();   // Verzend push notificatie
     setModalVisible(false);
   };
 
@@ -149,7 +166,10 @@ export default function Home() {
             />
           </TouchableOpacity>
         </>
+        
       )}
+     
+
       <View style={styles.separator} />
       <Text style={styles.subText}>Feeling Unsafe</Text>
       <View style={styles.checklist}>

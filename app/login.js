@@ -12,8 +12,8 @@ import {
   Platform
 } from "react-native";
 import { Link, router } from "expo-router";
-import jwtDecode from "jwt-decode";
-import logo from '../assets/images/geenBackground.png'; // Import the image at the top
+import { jwtDecode } from "jwt-decode";
+import logo from '../assets/images/geenBackground.png'; // Importeer de afbeelding bovenaan
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -38,8 +38,16 @@ export default function LoginPage() {
       });
   
       const responseText = await response.text();
-      const responseData = responseText ? JSON.parse(responseText) : null;
-      console.log("Server response:", responseData);
+      //console.log("Server response text:", responseText);
+  
+      let responseData;
+      try {
+        responseData = JSON.parse(responseText);
+      } catch (e) {
+        responseData = null;
+      }
+  
+      //console.log("Server response JSON:", responseData);
   
       if (response.ok) {
         if (responseData) {
@@ -48,15 +56,22 @@ export default function LoginPage() {
           setRefreshToken(refreshToken);
           const decodedToken = jwtDecode(accessToken);
           setUserId(decodedToken.userId);
-          // Navigate to the next screen or perform other actions
+          router.push({ pathname: '/', params: { userId: decodedToken.userId } });
+        } else if (responseText) {
+          // Handle the case where the response is a JWT token
+          const accessToken = responseText;
+          setAccessToken(accessToken);
+          const decodedToken = jwtDecode(accessToken);
+          setUserId(decodedToken.userId);
+          router.push({ pathname: '/', params: { userId: decodedToken.userId } });
         } else {
           Alert.alert("Error", "Failed to parse server response");
         }
       } else {
-        Alert.alert("Error", responseData?.message || "Login failed");
+        Alert.alert("Error", responseData?.message || responseText || "Login failed");
       }
     } catch (error) {
-      console.error("Login error:", error);
+      //console.error("Login error:", error);
       Alert.alert("Error", "An error occurred during login");
     }
   };
@@ -73,7 +88,7 @@ export default function LoginPage() {
 
       const responseText = await response.text();
       const responseData = responseText ? JSON.parse(responseText) : null;
-      console.log("Refresh response:", responseData);
+      //console.log("Refresh response:", responseData);
 
       if (response.ok) {
         if (responseData) {
