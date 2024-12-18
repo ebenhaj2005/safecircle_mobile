@@ -33,7 +33,7 @@ export default function Home() {
         console.log('Push-notificatie-permissie verleend');
   
         const token = await Notifications.getExpoPushTokenAsync({
-          projectId: "e6eaafe3-e57c-499b-9782-d0e460a3f22e",
+          projectId: "",
         });
         console.log('Push Token:', token);
   
