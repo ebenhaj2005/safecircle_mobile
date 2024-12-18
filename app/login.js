@@ -29,7 +29,7 @@ export default function LoginPage() {
     }
   
     try {
-      const response = await fetch('http://192.168.0.110:8080/user/authenticate', { // IP-adres van je thuis wifi
+      const response = await fetch('http://10.2.88.152:8080/user/authenticate', { // IP-adres van je thuis wifi
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
