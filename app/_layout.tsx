@@ -1,3 +1,4 @@
+import React from "react";
 import { Stack, useSegments } from "expo-router";
 import Navbar from "../components/Navbar";
 
@@ -12,7 +13,6 @@ export default function RootLayout() {
 
         <Stack.Screen name="index" options={{ title: "Home" , headerShown: false}} />
         <Stack.Screen name="circle" options={{ title: "circle" , headerShown: false}} />
-        <Stack.Screen name="circleAdd" options={{ title: "circleAdd" , headerShown: false}} />
         <Stack.Screen name="map" options={{ title: "map",headerShown: false }} />
         <Stack.Screen name="event" options={{ title: "event",headerShown: false }} />
         <Stack.Screen name="profile" options={{ title: "profile",headerShown: false }} />
@@ -26,6 +26,8 @@ export default function RootLayout() {
         <Stack.Screen name="profileAddChild" options={{ title: "profileAddChild",headerShown: false }} />
         <Stack.Screen name="settings" options={{ title: "settings",headerShown: false }} />
         <Stack.Screen name="contact" options={{ title: "contact",headerShown: false }} />
+        <Stack.Screen name="circleDetails" options={{ title: "circleDetails",headerShown: false }} />
+
       </Stack>
       
       {!hideNavbar && <Navbar />}
