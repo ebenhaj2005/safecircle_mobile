@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,13 +7,14 @@ import {
   StyleSheet,
   Alert,
   Image,
-  ScrollView,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  ScrollView,
 } from "react-native";
 import { Link, router } from "expo-router";
 import { jwtDecode } from "jwt-decode";
-import logo from '../assets/images/geenBackground.png'; // Importeer de afbeelding bovenaan
+import * as SecureStore from 'expo-secure-store'; // Import SecureStore
+import logo from '../assets/images/geenBackground.png';
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -21,6 +22,28 @@ export default function LoginPage() {
   const [userId, setUserId] = useState(null); 
   const [accessToken, setAccessToken] = useState(null);
   const [refreshToken, setRefreshToken] = useState(null);
+  const [subject, setSubject] = useState(null); // State voor het subject
+
+  // Haal tokens op bij het starten van de app
+  useEffect(() => {
+    const checkLoggedIn = async () => {
+      const storedAccessToken = await SecureStore.getItemAsync('accessToken');
+      const storedRefreshToken = await SecureStore.getItemAsync('refreshToken');
+      
+  /*     console.log("Checking logged-in status...");
+      console.log("Stored Access Token: ", storedAccessToken);
+      console.log("Stored Refresh Token: ", storedRefreshToken); */
+
+      if (storedAccessToken && storedRefreshToken) {
+        console.log("Tokens found. Attempting to refresh access token...");
+        // Als er een refreshToken is, probeer dan het accessToken te vernieuwen
+        await refreshTokens(storedRefreshToken);
+      } else {
+        console.log("No tokens found. User needs to log in.");
+      }
+    };
+    checkLoggedIn();
+  }, []);
 
   const handleLogin = async () => {
     if (email === "" || password === "") {
@@ -29,7 +52,8 @@ export default function LoginPage() {
     }
   
     try {
-      const response = await fetch('http://10.2.88.103:8080/user/authenticate', { // IP-adres van je thuis wifi
+      console.log("Sending login request...");
+      const response = await fetch('http://10.2.88.103:8080/user/authenticate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -38,73 +62,93 @@ export default function LoginPage() {
       });
   
       const responseText = await response.text();
-      //console.log("Server response text:", responseText);
   
       let responseData;
       try {
         responseData = JSON.parse(responseText);
       } catch (e) {
         responseData = null;
+        console.log("Error parsing server response:", error);
       }
   
-      //console.log("Server response JSON:", responseData);
-  
       if (response.ok) {
+        console.log("Login successful!");
         if (responseData) {
           const { accessToken, refreshToken } = responseData;
           setAccessToken(accessToken);
           setRefreshToken(refreshToken);
+  
+          // Sla de accessToken en refreshToken veilig op in SecureStore
+          await SecureStore.setItemAsync('accessToken', accessToken);
+          await SecureStore.setItemAsync('refreshToken', refreshToken);
+  
+          // Decodeer het JWT token en haal de 'sub' (subject) eruit
           const decodedToken = jwtDecode(accessToken);
-          setUserId(decodedToken.userId);
-          router.push({ pathname: '/', params: { userId: decodedToken.userId } });
-        } else if (responseText) {
-          // Handle the case where the response is a JWT token
-          const accessToken = responseText;
-          setAccessToken(accessToken);
-          const decodedToken = jwtDecode(accessToken);
-          setUserId(decodedToken.userId);
-          router.push({ pathname: '/', params: { userId: decodedToken.userId } });
+          const userId = decodedToken.sub;  // Gebruik sub als userId
+          setUserId(userId);  
+          setSubject(userId); 
+          
+          // userId in SecureStore
+          await SecureStore.setItemAsync('userId', userId);
+  
+          /* console.log("Decoded Token: ", decodedToken);
+          console.log("User ID (subject): ", userId);
+          console.log("Subject: ", userId); */
+  
+          router.push({ pathname: '/', params: { userId, subject: userId } });
         } else {
           Alert.alert("Error", "Failed to parse server response");
         }
       } else {
+        console.log("Login failed with response data: ", responseData);
         Alert.alert("Error", responseData?.message || responseText || "Login failed");
       }
     } catch (error) {
-      //console.error("Login error:", error);
+      console.error("Login error:", error);
       Alert.alert("Error", "An error occurred during login");
     }
   };
+  
 
-  const refreshTokens = async () => {
+  const refreshTokens = async (storedRefreshToken) => {
     try {
+      console.log("Refreshing tokens...");
       const response = await fetch('http://10.2.88.103:8080/user/refresh-token', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ refreshToken }),
+        body: JSON.stringify({ refreshToken: storedRefreshToken }),
       });
 
       const responseText = await response.text();
       const responseData = responseText ? JSON.parse(responseText) : null;
-      //console.log("Refresh response:", responseData);
 
       if (response.ok) {
+        console.log("Token refresh successful.");
         if (responseData) {
           const { accessToken, refreshToken } = responseData;
           setAccessToken(accessToken);
           setRefreshToken(refreshToken);
+
+          await SecureStore.setItemAsync('accessToken', accessToken);
+          await SecureStore.setItemAsync('refreshToken', refreshToken);
+
           const decodedToken = jwtDecode(accessToken);
           setUserId(decodedToken.userId);
+          setSubject(decodedToken.sub); 
+          /* console.log("Decoded Refresh Token: ", decodedToken); 
+          console.log("User ID from Refresh: ", decodedToken.userId); 
+          console.log("Subject from Refresh: ", decodedToken.sub);  */
         } else {
           Alert.alert("Error", "Failed to parse server response");
         }
       } else {
+        //console.log("Token refresh failed. Response data:", responseData);
         Alert.alert("Error", responseData?.message || "Token refresh failed");
       }
     } catch (error) {
-      console.error("Token refresh error:", error);
+      //console.error("Token refresh error:", error);
       Alert.alert("Error", "An error occurred during token refresh");
     }
   };

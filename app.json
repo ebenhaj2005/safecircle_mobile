@@ -16,7 +16,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.safecircle.safecircle20"
     },
     "web": {
       "bundler": "metro",
@@ -33,7 +34,8 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true
@@ -44,13 +46,15 @@
       },
       "eas": {
         "projectId": "e6eaafe3-e57c-499b-9782-d0e460a3f22e"
-      }
+      },
+      "projectId": "e6eaafe3-e57c-499b-9782-d0e460a3f22e"
     },
     "runtimeVersion": {
       "policy": "appVersion"
     },
     "updates": {
       "url": "https://u.expo.dev/e6eaafe3-e57c-499b-9782-d0e460a3f22e"
-    }
+    },
+    "owner": "safecircle"
   }
 }
