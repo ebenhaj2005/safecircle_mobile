@@ -78,7 +78,7 @@ export default function LoginPage() {
 
   const refreshTokens = async () => {
     try {
-      const response = await fetch('http://192.168.0.110:8080/user/refresh-token', {
+      const response = await fetch('http://10.2.88.103:8080/user/refresh-token', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

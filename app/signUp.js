@@ -46,7 +46,7 @@ export default function SignUpPage() {
     }
 
     try {
-      const response = await fetch('http://192.168.0.110:8080/user/create', { // IP-adres van je thuis wifi (ipconfig)
+      const response = await fetch('http://10.2.88.103:8080/user/create', { // IP-adres van je thuis wifi (ipconfig)
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -57,6 +57,7 @@ export default function SignUpPage() {
           email,
           password,
           phone,
+          dateOfBirth
         }),
       });
   
@@ -128,8 +129,18 @@ export default function SignUpPage() {
           onChangeText={setPhone}
           keyboardType="phone-pad"
         />
+        <TextInput
+          style={styles.input}
+          placeholder="Date (YYYY-MM-DD)"
+          placeholderTextColor="#888"
+          value={date}
+          onChangeText={setDate}
+          keyboardType="numeric"
+        />
         <Button title="Sign Up" onPress={handleSignUp} color="#CD9594" />
-        <Link href="/login" style={styles.link}><Text>Already have an account? Login</Text></Link>
+        <Link href="/login" style={styles.link}>
+          <Text>Already have an account? Login</Text>
+        </Link>
       </ScrollView>
     </KeyboardAvoidingView>
   );
