@@ -39,6 +39,10 @@ export default function RootLayout() {
           options={{ title: "Circle", headerShown: false }}
         />
         <Stack.Screen
+          name="circleAdd"
+          options={{ title: "CircleAdd", headerShown: false }}
+        />
+        <Stack.Screen
           name="map"
           options={{ title: "Map", headerShown: false }}
         />

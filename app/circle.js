@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Modal } from "react-native";
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
 const Circle = () => {
@@ -8,8 +9,8 @@ const Circle = () => {
     const numColumns = 2;
     const navigation = useNavigation();
 
-    //const token = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0Iiwicm9sZSI6IlVTRVIiLCJ0eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM0NjA2ODExfQ.s0iNWdJx-5c-HJ0g__CnGjG3DL8WMiuYiewRAI3YItM";
-    const url = 'http://10.2.88.221:8080/circle/getAll/4';
+   // const token = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI3Iiwicm9sZSI6IlVTRVIiLCJ0eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM0NzAyNjY4fQ.G0kTvi3c3UhgIbKmPbVVz-w0CevIfmImSfadfvp_i5A";
+    const url = 'http://192.168.129.168:8080/circle/getAll/7';
 
     useEffect(() => {
         const fetchCircles = async () => {
@@ -21,7 +22,6 @@ const Circle = () => {
 
                 if (!response.ok) throw new Error('Network response was not ok');
                 const data = await response.json();
-                console.log("Circles data fetched:", data);
                 setCircles(data);
             } catch (error) {
                 console.error("Error fetching data:", error);
@@ -34,16 +34,28 @@ const Circle = () => {
     const renderItem = ({ item }) => (
         <View style={styles.circleContainer}>
             <TouchableOpacity
-                onPress={() => navigation.navigate('UpdateCircle', { circleId: item.id })}
+                onPress={() => navigation.navigate('circleDetails', { circleId: item.circleId })}
                 style={styles.circle}>
                 <Text style={styles.circleName}>{item.circleName}</Text>
             </TouchableOpacity>
         </View>
     );
 
+    const renderHeader = () => (
+        <View style={styles.header}>
+            <TouchableOpacity onPress={() => setModalVisible(true)}>
+                <Ionicons name="notifications-outline" size={30} color="#CD9594" />
+            </TouchableOpacity>
+            <Text style={styles.title}>Circles</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('circleAdd')}>
+                <Ionicons name="add-circle-outline" size={30} color="#CD9594" />
+            </TouchableOpacity>
+        </View>
+    );
+
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Circles</Text>
+            {renderHeader()}
             <View style={styles.separator} />
             {circles.length === 0 ? (
                 <Text style={styles.noCirclesText}>No circles available</Text>
@@ -64,7 +76,7 @@ const Circle = () => {
                 onRequestClose={() => setModalVisible(false)}>
                 <View style={styles.modalContainer}>
                     <View style={styles.modalContent}>
-                        <Text style={styles.modalTitle}>Circle Details</Text>
+                        <Text style={styles.modalTitle}>Notifications</Text>
                         <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeButton}>
                             <Text style={styles.closeButtonText}>Close</Text>
                         </TouchableOpacity>
@@ -78,11 +90,22 @@ const Circle = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 20,
         backgroundColor: "white",
         paddingTop: 50,
         paddingBottom: 100,
-
+    },
+    header: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        paddingHorizontal: 20,
+        backgroundColor: "#f9f9f9",
+        paddingVertical: 10,
+    },
+    title: {
+        fontSize: 24,
+        fontWeight: "bold",
+        color: "#CD9594",
     },
     circleContainer: {
         flexDirection: 'row',
@@ -113,13 +136,6 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontSize: 18,
         color: 'gray',
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: "bold",
-        textAlign: "center",
-        marginBottom: 10,
-        color: "#CD9594",
     },
     separator: {
         height: 1,

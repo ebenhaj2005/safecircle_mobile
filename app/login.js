@@ -29,7 +29,11 @@ export default function LoginPage() {
     }
   
     try {
+<<<<<<< Updated upstream
       const response = await fetch('http://10.2.88.152:8080/user/authenticate', { // IP-adres van je thuis wifi
+=======
+      const response = await fetch('http://192.168.129.168:8080/user/authenticate', { // IP-adres van je thuis wifi
+>>>>>>> Stashed changes
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

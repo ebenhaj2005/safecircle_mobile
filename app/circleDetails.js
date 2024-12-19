@@ -10,8 +10,8 @@ const UpdateCircle = () => {
     const route = useRoute();
     const { circleId } = route.params || {}; // Get circleId from route params
 
-   // const token = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0Iiwicm9sZSI6IlVTRVIiLCJ0eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM0NjA2ODExfQ.s0iNWdJx-5c-HJ0g__CnGjG3DL8WMiuYiewRAI3YItM";
-    const url = `http://10.2.88.221:8080/circle/${circleId}/update`; // Use dynamic circleId
+ //   const token = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0Iiwicm9sZSI6IlVTRVIiLCJ0eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM0NjA2ODExfQ.s0iNWdJx-5c-HJ0g__CnGjG3DL8WMiuYiewRAI3YItM";
+    const url = `http://192.168.129.168:8080/circle/${circleId}/update`; // Use dynamic circleId
 
     useEffect(() => {
         if (!circleId) {
