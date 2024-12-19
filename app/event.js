@@ -5,35 +5,30 @@ import {
   TextInput,
   FlatList,
   TouchableOpacity,
-  StyleSheet,
-  
+  StyleSheet
 } from "react-native";
-import Icon from "react-native-vector-icons/Ionicons"; 
+import Icon from "react-native-vector-icons/Ionicons";
 import { Link } from "expo-router";
 
 const events = [
   { id: "1", name: "Tomorrowland", date: "27/11/2024 - 30/11/2024" },
   { id: "2", name: "Couleur Café", date: "04/12/2024 - 08/12/2024" },
-  { id: "3", name: "GRASPOP", date: "03/02/2025 - 07/02/2025" },
+  { id: "3", name: "GRASPOP", date: "03/02/2025 - 07/02/2025" }
 ];
-
 
 export default function EventsPage() {
   return (
     <View style={styles.container}>
-
       <View style={styles.header}>
         <Text style={styles.title}>Events</Text>
-        
-        <TouchableOpacity  style={styles.addButton}>
-         <Link href="/eventrequestpage" style={styles.link}>
-          <Icon  name="add-circle-outline" size={29} color="#d68787" />
-           </Link>
+
+        <TouchableOpacity style={styles.addButton}>
+          <Link href="/eventrequestpage" style={styles.link}>
+            <Icon name="add-circle-outline" size={29} color="#d68787" />
+          </Link>
         </TouchableOpacity>
-       
       </View>
 
-    
       <View style={styles.searchContainer}>
         <Icon
           name="search"
@@ -48,7 +43,6 @@ export default function EventsPage() {
         />
       </View>
 
- 
       <FlatList
         data={events}
         keyExtractor={(item) => item.id}
@@ -77,21 +71,21 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    padding: 16,
+    padding: 16
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 16,
-    marginTop: 30,
+    marginTop: 30
   },
   title: {
     fontSize: 24,
-    fontWeight: "bold",
+    fontWeight: "bold"
   },
   addButton: {
-    padding: 8,
+    padding: 8
   },
   searchContainer: {
     flexDirection: "row",
@@ -100,14 +94,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    marginBottom: 16,
+    marginBottom: 16
   },
   searchIcon: {
-    marginRight: 8,
+    marginRight: 8
   },
   searchInput: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 16
   },
   eventCard: {
     flexDirection: "row",
@@ -118,36 +112,36 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: "#ececec",
+    borderColor: "#ececec"
   },
   eventName: {
     fontSize: 18,
-    fontWeight: "500",
+    fontWeight: "500"
   },
   eventDate: {
     fontSize: 14,
-    color: "#a0a0a0",
+    color: "#a0a0a0"
   },
   joinButton: {
     backgroundColor: "#d68787",
     paddingVertical: 6,
     paddingHorizontal: 16,
-    borderRadius: 20,
+    borderRadius: 20
   },
   joinButtonText: {
     color: "#fff",
-    fontWeight: "bold",
+    fontWeight: "bold"
   },
   scanButton: {
     backgroundColor: "#d68787",
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: "center",
-    marginTop: 16,
+    marginTop: 16
   },
   scanButtonText: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "bold",
-  },
+    fontWeight: "bold"
+  }
 });

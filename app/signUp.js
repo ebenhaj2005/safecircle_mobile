@@ -1,25 +1,38 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert, Image } from 'react-native';
-import { Link } from 'expo-router';
-import { useRouter } from 'expo-router';
-export default function signUp() {
-  const [firstname, setFirstName] = useState('');
-  const [lastname, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [repeatpassword, setRepeatPassword] = useState('');
-  const router = useRouter();
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  StyleSheet,
+  Alert,
+  Image,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform
+} from "react-native";
+import { Link, router } from "expo-router";
+import logo from '../assets/images/geenBackground.png'; // Import the image at the top
 
-  const handleSignUp = () => {
-    if (firstname.trim().length === 0) {
-      Alert.alert('Error', 'Firstname cannot be empty');
+export default function SignUpPage() {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [repeatPassword, setRepeatPassword] = useState("");
+  const [phone, setPhone] = useState("");
+
+  const handleSignUp = async () => {
+    // Validations
+    if (!firstName.trim()) {
+      Alert.alert('Error', 'First name cannot be empty');
       return;
     }
-    if (lastname.trim().length === 0) {
-        Alert.alert('Error', 'Lastame cannot be empty');
-        return;
-      }
-    if (email.trim().length === 0) {
+    if (!lastName.trim()) {
+      Alert.alert('Error', 'Last name cannot be empty');
+      return;
+    }
+    if (!email.trim()) {
       Alert.alert('Error', 'Email cannot be empty');
       return;
     }
@@ -27,98 +40,129 @@ export default function signUp() {
       Alert.alert('Error', 'Password must be at least 6 characters long');
       return;
     }
-    if (repeatpassword != password) {
-        Alert.alert('Error', 'Password is not matching');
-        return;
+    if (repeatPassword !== password) {
+      Alert.alert('Error', 'Passwords do not match');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://192.168.0.110:8080/user/create', { // IP-adres van je thuis wifi (ipconfig)
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          email,
+          password,
+          phone,
+        }),
+      });
+  
+      const rawData = await response.text(); // Lees de serverrespons als tekst
+      console.log('Server response:', rawData); // Log de ruwe string voor debugging
+  
+      if (response.ok) {
+        Alert.alert('Success', 'Account created successfully');
+        // Navigate to another page or perform other actions
+      } else {
+        Alert.alert('Error', 'Failed to create account');
       }
-    Alert.alert('Success', `Welcome, ${firstname } ${lastname}!`, [
-      {
-        text: 'OK',
-        onPress: () => router.push('/'), 
-      },
-    ]);
+    } catch (error) {
+      console.error('Error during sign-up:', error);
+      Alert.alert('Error', 'An error occurred during sign-up');
+    }
   };
 
-    
-  ;
-
   return (
-    <View style={styles.container}>
-   
-   <Image
-        source={require("../assets/images/safecirclelogo.png")}
-        style={{ width: 300, height: 300, marginBottom: 20 }}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="First name"
-        value={firstname}
-        onChangeText={setFirstName}
-      />
-
-<TextInput
-        style={styles.input}
-        placeholder="Last name"
-        value={lastname}
-        onChangeText={setLastName}
-      />
-       <TextInput
-        style={styles.input}
-        placeholder="email"
-        value={email}
-        onChangeText={setEmail}
-      />
-    
-     
-
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-       
-      />
- <TextInput
-        style={styles.input}
-        placeholder="Repeat Password"
-        secureTextEntry
-        value={repeatpassword}
-        onChangeText={setRepeatPassword}
-   
-      />
-      <Button title="Sign Up" onPress={handleSignUp} color="#CD9594" />
-
-      <Link href="/login" style={styles.link}>
-        Already have an account? Go to Login
-      </Link>
-    </View>
-  )};
-
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <ScrollView contentContainerStyle={styles.container}>
+        <Image source={logo} style={styles.logo} /> {/* Use the imported image variable */}
+        <Text style={styles.title}>Sign Up</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="First Name"
+          placeholderTextColor="#888"
+          value={firstName}
+          onChangeText={setFirstName}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Last Name"
+          placeholderTextColor="#888"
+          value={lastName}
+          onChangeText={setLastName}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          placeholderTextColor="#888"
+          value={email}
+          onChangeText={setEmail}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          placeholderTextColor="#888"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Repeat Password"
+          placeholderTextColor="#888"
+          value={repeatPassword}
+          onChangeText={setRepeatPassword}
+          secureTextEntry
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Phone (optional)"
+          placeholderTextColor="#888"
+          value={phone}
+          onChangeText={setPhone}
+          keyboardType="phone-pad"
+        />
+        <Button title="Sign Up" onPress={handleSignUp} color="#CD9594" />
+        <Link href="/login" style={styles.link}><Text>Already have an account? Login</Text></Link>
+      </ScrollView>
+    </KeyboardAvoidingView>
+  );
+}
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'white',
-    padding: 20,
+    padding: 16,
+    backgroundColor: '#fff',
   },
- 
+  logo: {
+    width: 300,
+    height: 200,
+    marginBottom: 32,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 24,
+  },
   input: {
     width: '100%',
-    padding: 10,
-    marginBottom: 15,
+    padding: 12,
     borderWidth: 1,
     borderColor: '#ccc',
-    borderRadius: 5,
-    color: '#black',
-    backgroundColor: 'white',
+    borderRadius: 8,
+    marginBottom: 16,
   },
   link: {
-    marginTop: 20,
-    color: '#CD9594',
-    textDecorationLine: 'underline',
-    fontSize: 16,
+    marginTop: 16,
+    color: '#007BFF',
   },
 });

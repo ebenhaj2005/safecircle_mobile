@@ -4,8 +4,6 @@ import { Alert } from "react-native";
 import { requestPermission, getFcmToken, setupNotificationListeners } from "./firebaseSetup";
 
 export default function App() {
-
-  
   useEffect(() => {
     async function setupFirebase() {
       const hasPermission = await requestPermission();
@@ -38,4 +36,5 @@ export default function App() {
   }
 
 
+  return null; // Your App UI
 }

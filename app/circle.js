@@ -82,6 +82,7 @@ const styles = StyleSheet.create({
         backgroundColor: "white",
         paddingTop: 50,
         paddingBottom: 100,
+
     },
     circleContainer: {
         flexDirection: 'row',

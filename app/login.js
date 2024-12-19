@@ -6,99 +6,167 @@ import {
   Button,
   StyleSheet,
   Alert,
-  Image
+  Image,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform
 } from "react-native";
 import { Link, router } from "expo-router";
+import { jwtDecode } from "jwt-decode";
+import logo from '../assets/images/geenBackground.png'; // Importeer de afbeelding bovenaan
 
 export default function LoginPage() {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [userId, setUserId] = useState(null); 
+  const [accessToken, setAccessToken] = useState(null);
+  const [refreshToken, setRefreshToken] = useState(null);
 
-  const handleLogin = () => {
-    if (username === "" || password === "") {
-      Alert.alert("Error", "Please enter both username and password");
+  const handleLogin = async () => {
+    if (email === "" || password === "") {
+      Alert.alert("Error", "Please enter both email and password");
       return;
     }
-    Alert.alert(
-      "Login Successful",
-      `Welcome: ${username}`
-    );
-    router.push("/");
+  
+    try {
+      const response = await fetch('http://10.2.88.152:8080/user/authenticate', { // IP-adres van je thuis wifi
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+  
+      const responseText = await response.text();
+      //console.log("Server response text:", responseText);
+  
+      let responseData;
+      try {
+        responseData = JSON.parse(responseText);
+      } catch (e) {
+        responseData = null;
+      }
+  
+      //console.log("Server response JSON:", responseData);
+  
+      if (response.ok) {
+        if (responseData) {
+          const { accessToken, refreshToken } = responseData;
+          setAccessToken(accessToken);
+          setRefreshToken(refreshToken);
+          const decodedToken = jwtDecode(accessToken);
+          setUserId(decodedToken.userId);
+          router.push({ pathname: '/', params: { userId: decodedToken.userId } });
+        } else if (responseText) {
+          // Handle the case where the response is a JWT token
+          const accessToken = responseText;
+          setAccessToken(accessToken);
+          const decodedToken = jwtDecode(accessToken);
+          setUserId(decodedToken.userId);
+          router.push({ pathname: '/', params: { userId: decodedToken.userId } });
+        } else {
+          Alert.alert("Error", "Failed to parse server response");
+        }
+      } else {
+        Alert.alert("Error", responseData?.message || responseText || "Login failed");
+      }
+    } catch (error) {
+      //console.error("Login error:", error);
+      Alert.alert("Error", "An error occurred during login");
+    }
+  };
+
+  const refreshTokens = async () => {
+    try {
+      const response = await fetch('http://192.168.0.110:8080/user/refresh-token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ refreshToken }),
+      });
+
+      const responseText = await response.text();
+      const responseData = responseText ? JSON.parse(responseText) : null;
+      //console.log("Refresh response:", responseData);
+
+      if (response.ok) {
+        if (responseData) {
+          const { accessToken, refreshToken } = responseData;
+          setAccessToken(accessToken);
+          setRefreshToken(refreshToken);
+          const decodedToken = jwtDecode(accessToken);
+          setUserId(decodedToken.userId);
+        } else {
+          Alert.alert("Error", "Failed to parse server response");
+        }
+      } else {
+        Alert.alert("Error", responseData?.message || "Token refresh failed");
+      }
+    } catch (error) {
+      console.error("Token refresh error:", error);
+      Alert.alert("Error", "An error occurred during token refresh");
+    }
   };
 
   return (
-    <View style={styles.container}>
-      <Image
-        source={require("../assets/images/safecirclelogo.png")}
-        style={{ width: 300, height: 300 ,marginBottom: 20 }}
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Username"
-        value={username}
-        onChangeText={setUsername}
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
-      <Link href="/passwordForget" style={styles.recovery}>
-        Forgot Password?
-      </Link>
-      <Button title="Login" onPress={handleLogin} color="#CD9594" />
-
-      <Link href="/signUp" style={styles.link}>
-        Don't have an account? Sign Up
-      </Link>
-    </View>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <ScrollView contentContainerStyle={styles.container}>
+        <Image source={logo} style={styles.logo} /> 
+        <Text style={styles.title}>Login</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          placeholderTextColor="#888"
+          value={email}
+          onChangeText={setEmail}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          placeholderTextColor="#888"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+        />
+        <Button title="Login" onPress={handleLogin} color="#CD9594" />
+        <Link href="/signUp" style={styles.link}><Text>Don't have an account? Register</Text></Link>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "white",
-    padding: 20,
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: '#fff',
   },
-
-
-  text: {
-    color: "black",
-    fontSize: 20,
-    marginBottom: 20,
+  logo: {
+    width: 200,
+    height: 200,
+    marginBottom: 32,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 24,
   },
   input: {
-    width: "100%",
-    padding: 10,
-    marginBottom: 15,
+    width: '100%',
+    padding: 12,
     borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 5,
-    color: "black",
-    backgroundColor: "white",
+    borderColor: '#ccc',
+    borderRadius: 8,
+    marginBottom: 16,
   },
   link: {
-    marginTop: 20,
-    color: "#CD9594",
-    textDecorationLine: "underline",
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 50,
-  },
-  recovery: {
-    float: "right",
-    color: "#CD9594",
-    textDecorationLine: "underline",
-    fontSize: 13,
-
-    fontWeight: "bold",
-    marginBottom: 50,
+    marginTop: 16,
+    color: '#007BFF',
   },
 });
