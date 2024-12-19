@@ -1,6 +1,8 @@
+
 import React, { useEffect } from "react";
 import { Stack, useSegments, useRouter } from "expo-router";
 import Navbar from "../components/Navbar";
+
 
 export default function RootLayout() {
   const router = useRouter();
@@ -21,7 +23,9 @@ export default function RootLayout() {
   }, [router]);
   return (
     <>
+
       <Stack>
+        
         <Stack.Screen
           name="login"
           options={{ title: "Login", headerShown: false }}
@@ -82,6 +86,7 @@ export default function RootLayout() {
           name="contact"
           options={{ title: "Contact", headerShown: false }}
         />
+        <Stack.Screen name="circleDetails" options={{ title: "circleDetails",headerShown: false }} />
       </Stack>
 
       {!hideNavbar && <Navbar />}

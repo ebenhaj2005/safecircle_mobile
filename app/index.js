@@ -221,8 +221,8 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: "flex-start",
     alignItems: "center",
-    paddingTop: 50,
-    marginTop: 10,
+    marginTop: 20,
+
   },
   text: {
     fontSize: 24,

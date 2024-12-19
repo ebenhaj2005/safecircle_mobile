@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { Alert } from "react-native";
+
 import { requestPermission, getFcmToken, setupNotificationListeners } from "./firebaseSetup";
 
 export default function App() {
@@ -33,6 +34,7 @@ export default function App() {
       body: JSON.stringify({ fcmToken: token }),
     });
   }
+
 
   return null; // Your App UI
 }
