@@ -21,6 +21,7 @@ export default function SignUpPage() {
   const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
   const [phone, setPhone] = useState("");
+  const [dateOfBirth, setDate] = useState("");
 
   const handleSignUp = async () => {
     // Validations
@@ -133,9 +134,9 @@ export default function SignUpPage() {
           style={styles.input}
           placeholder="Date (YYYY-MM-DD)"
           placeholderTextColor="#888"
-          value={date}
+          value={dateOfBirth}
           onChangeText={setDate}
-          keyboardType="numeric"
+          
         />
         <Button title="Sign Up" onPress={handleSignUp} color="#CD9594" />
         <Link href="/login" style={styles.link}>
