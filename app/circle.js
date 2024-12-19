@@ -9,8 +9,8 @@ const Circle = () => {
     const numColumns = 2;
     const navigation = useNavigation();
 
-   // const token = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI3Iiwicm9sZSI6IlVTRVIiLCJ0eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM0NzAyNjY4fQ.G0kTvi3c3UhgIbKmPbVVz-w0CevIfmImSfadfvp_i5A";
-    const url = 'http://192.168.129.168:8080/circle/getAll/7';
+    const token = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI3Iiwicm9sZSI6IlVTRVIiLCJ0eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM0NzM1ODE2fQ.RAk84Mi-zBLIoE_JSM24xeHIKTnpbU_gmylzQFeFQQ4";
+    const url = 'http://192.168.129.177:8080/circle/getAll/7';
 
     useEffect(() => {
         const fetchCircles = async () => {
@@ -29,7 +29,7 @@ const Circle = () => {
         };
 
         fetchCircles();
-    }, []);
+    }, [circles]);
 
     const renderItem = ({ item }) => (
         <View style={styles.circleContainer}>
