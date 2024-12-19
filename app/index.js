@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Button, Mo
 import localImage from '../assets/images/geenBackground.png';
 import { Link } from 'expo-router';
 import * as Notifications from 'expo-notifications';
-
+import Constants from 'expo-constants';
 
 export default function Home() {
   const [modalVisible, setModalVisible] = useState(false);
@@ -14,8 +14,12 @@ export default function Home() {
   const [timer, setTimer] = useState(0);
   const [intervalId, setIntervalId] = useState(null);
   const [selectedCheckboxes, setSelectedCheckboxes] = useState({}); // For select boxes
+  const [pushToken, setPushToken] = useState(null);
+  const [originalPushToken, setOriginalPushToken] = useState(null);
 
-  const userId = 3;  
+  const userId = 4; 
+  
+  
   useEffect(() => {
     const getPushToken = async () => {
       try {
@@ -23,25 +27,36 @@ export default function Home() {
   
         if (status !== 'granted') {
           const { status: newStatus } = await Notifications.requestPermissionsAsync();
-  
           if (newStatus !== 'granted') {
             Alert.alert('Push-notificatie-permissie geweigerd');
             return;
           }
         }
   
-        console.log('Push-notificatie-permissie verleend');
-  
         const token = await Notifications.getExpoPushTokenAsync({
-          projectId: "",
+          projectId: "e6eaafe3-e57c-499b-9782-d0e460a3f22e",
         });
-        console.log('Push Token:', token);
+        console.log('Push Token:', token.data);
   
-        await fetch(`https://192.168.0.110:8080/${userId}/register-token`, {
+        
+        const extractedToken = token.data.replace('ExponentPushToken[', '').replace(']', '');
+        //console.log('Extracted Token:', extractedToken); 
+  
+        setPushToken(extractedToken); 
+        setOriginalPushToken(token.data); 
+  
+        // to backend
+        const response = await fetch(`http://10.2.88.103:8080/user/3/register-token`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token }),
+          body: JSON.stringify({ fcmToken: extractedToken }),  // extracted token
         });
+  
+        if (response.ok) {
+          console.log('Push token registered');
+        } else {
+          console.error('Failed to register push token:', response.status);
+        }
       } catch (err) {
         console.error('Error getting push token:', err.message);
       }
@@ -49,6 +64,7 @@ export default function Home() {
   
     getPushToken();
   }, []);
+  
   
 
   useEffect(() => {
@@ -65,26 +81,6 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [sosSent]);
 
-  const sendLocationToFirebase = async () => {
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Permission to access location was denied');
-        return;
-      }
-
-      const location = await Location.getCurrentPositionAsync({});
-      const { latitude, longitude } = location.coords;
-
-      await addDoc(collection(db, "locations"), {
-        latitude,
-        longitude,
-        timestamp: new Date().toISOString()
-      });
-    } catch (error) {
-      console.error("Error sending location: ", error);
-    }
-  };
 
   useEffect(() => {
     let locationInterval;
@@ -99,18 +95,41 @@ export default function Home() {
 
 
   const sendPushNotification = async () => {
+    if (!pushToken) {
+      console.error('No push token available.');
+      return;
+    }
+
     try {
-      await Notifications.scheduleNotificationAsync({
-        content: {
-          title: "SOS Alert",
-          body: "Noodmelding verzonden! Druk op STOP om te annuleren.",
+      console.log('Sending push notification...');
+
+      const message = {
+        to: originalPushToken,  // Use the pushToken stored in the state
+        sound: 'default',
+        title: 'SOS Alert',
+        body: 'SOS alert sent, press stop to stop it.',
+        data: { extraData: 'extra data', userId: userId },
+      };
+
+      const response = await fetch('https://exp.host/--/api/v2/push/send', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
         },
-        trigger: null, // Direct verzenden
+        body: JSON.stringify(message),
       });
+
+      if (response.ok) {
+        console.log('Notification sent successfully!');
+      } else {
+        console.error('Failed to send notification:', response.status);
+      }
     } catch (error) {
-      console.error("Failed to send notification:", error);
+      console.error('Failed to send notification:', error);
     }
   };
+  
   const toggleCheckbox = (key) => {
     setSelectedCheckboxes((prev) => ({
       ...prev,
@@ -131,8 +150,7 @@ export default function Home() {
   const handleSendSOS = () => {
     Alert.alert("SOS verzonden!");
     setSosSent(true);
-    //sendLocationToFirebase(); // Directe eerste locatie-update
-    sendPushNotification();   // Verzend push notificatie
+    sendPushNotification();  // Send the push notification
     setModalVisible(false);
   };
 
