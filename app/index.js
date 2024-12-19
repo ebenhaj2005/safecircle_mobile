@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Button, Modal, Alert, TextInput } from 'react-native';
 import localImage from '../assets/images/geenBackground.png';
 import { Link } from 'expo-router';
+import * as Notifications from 'expo-notifications';
+
 
 export default function Home() {
   const [modalVisible, setModalVisible] = useState(false);
@@ -12,6 +14,42 @@ export default function Home() {
   const [timer, setTimer] = useState(0);
   const [intervalId, setIntervalId] = useState(null);
   const [selectedCheckboxes, setSelectedCheckboxes] = useState({}); // For select boxes
+
+  const userId = 3;  
+  useEffect(() => {
+    const getPushToken = async () => {
+      try {
+        const { status } = await Notifications.getPermissionsAsync();
+  
+        if (status !== 'granted') {
+          const { status: newStatus } = await Notifications.requestPermissionsAsync();
+  
+          if (newStatus !== 'granted') {
+            Alert.alert('Push-notificatie-permissie geweigerd');
+            return;
+          }
+        }
+  
+        console.log('Push-notificatie-permissie verleend');
+  
+        const token = await Notifications.getExpoPushTokenAsync({
+          projectId: "",
+        });
+        console.log('Push Token:', token);
+  
+        await fetch(`https://192.168.0.110:8080/${userId}/register-token`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token }),
+        });
+      } catch (err) {
+        console.error('Error getting push token:', err.message);
+      }
+    };
+  
+    getPushToken();
+  }, []);
+  
 
   useEffect(() => {
     let interval;
@@ -59,6 +97,20 @@ export default function Home() {
     return () => clearInterval(locationInterval);
   }, [sosSent]);
 
+
+  const sendPushNotification = async () => {
+    try {
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: "SOS Alert",
+          body: "Noodmelding verzonden! Druk op STOP om te annuleren.",
+        },
+        trigger: null, // Direct verzenden
+      });
+    } catch (error) {
+      console.error("Failed to send notification:", error);
+    }
+  };
   const toggleCheckbox = (key) => {
     setSelectedCheckboxes((prev) => ({
       ...prev,
@@ -77,9 +129,10 @@ export default function Home() {
   };
 
   const handleSendSOS = () => {
-    Alert.alert("SOS sent!");
+    Alert.alert("SOS verzonden!");
     setSosSent(true);
-    sendLocationToFirebase(); // Directe eerste locatie-update
+    //sendLocationToFirebase(); // Directe eerste locatie-update
+    sendPushNotification();   // Verzend push notificatie
     setModalVisible(false);
   };
 
@@ -113,7 +166,10 @@ export default function Home() {
             />
           </TouchableOpacity>
         </>
+        
       )}
+     
+
       <View style={styles.separator} />
       <Text style={styles.subText}>Feeling Unsafe</Text>
       <View style={styles.checklist}>
