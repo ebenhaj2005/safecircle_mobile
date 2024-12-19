@@ -4,6 +4,9 @@ import localImage from '../assets/images/geenBackground.png';
 import { Link } from 'expo-router';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
+import * as SecureStore from 'expo-secure-store';
+
+
 
 export default function Home() {
   const [modalVisible, setModalVisible] = useState(false);
@@ -16,15 +19,28 @@ export default function Home() {
   const [selectedCheckboxes, setSelectedCheckboxes] = useState({}); // For select boxes
   const [pushToken, setPushToken] = useState(null);
   const [originalPushToken, setOriginalPushToken] = useState(null);
+  const [userId, setUserId] = useState(null);
 
-  const userId = 4; 
   
+
+  // userId
+  useEffect(() => {
+    const fetchUserId = async () => {
+      // get userId out SecureStore
+      const storedUserId = await SecureStore.getItemAsync('userId');
+      setUserId(storedUserId);  // Store the userId in the state
+      //console.log('User ID:', storedUserId);
+    };
+
+    fetchUserId();
+  }, []);
   
+  //Push token
   useEffect(() => {
     const getPushToken = async () => {
+      if (!userId) return; // Wacht totdat userId beschikbaar is
       try {
         const { status } = await Notifications.getPermissionsAsync();
-  
         if (status !== 'granted') {
           const { status: newStatus } = await Notifications.requestPermissionsAsync();
           if (newStatus !== 'granted') {
@@ -34,22 +50,20 @@ export default function Home() {
         }
   
         const token = await Notifications.getExpoPushTokenAsync({
-          projectId: "e6eaafe3-e57c-499b-9782-d0e460a3f22e",
+          projectId: Constants.expoConfig.extra.projectId,
         });
-        console.log('Push Token:', token.data);
+        //console.log('Push Token:', token.data);
   
-        
         const extractedToken = token.data.replace('ExponentPushToken[', '').replace(']', '');
-        //console.log('Extracted Token:', extractedToken); 
-  
         setPushToken(extractedToken); 
         setOriginalPushToken(token.data); 
   
-        // to backend
-        const response = await fetch(`http://10.2.88.103:8080/user/3/register-token`, {
+
+        // Registreer token bij backend
+        const response = await fetch(`http://10.2.88.103:8080/user/${userId}/register-token`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ fcmToken: extractedToken }),  // extracted token
+          body: JSON.stringify({ fcmToken: extractedToken }),
         });
   
         if (response.ok) {
@@ -63,9 +77,11 @@ export default function Home() {
     };
   
     getPushToken();
-  }, []);
+  }, [userId]); // Toevoegen aan dependencies-array
   
   
+  
+  //timer
 
   useEffect(() => {
     let interval;
@@ -81,6 +97,7 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [sosSent]);
 
+  //location
 
   useEffect(() => {
     let locationInterval;
@@ -93,6 +110,8 @@ export default function Home() {
     return () => clearInterval(locationInterval);
   }, [sosSent]);
 
+
+  // send notification
 
   const sendPushNotification = async () => {
     if (!pushToken) {
@@ -109,6 +128,10 @@ export default function Home() {
         title: 'SOS Alert',
         body: 'SOS alert sent, press stop to stop it.',
         data: { extraData: 'extra data', userId: userId },
+        badge: 1,  // app logo
+        priority: 'high',  
+        channelId: 'default',  // channels voor Android
+        //_displayInForeground: true, more like an alert
       };
 
       const response = await fetch('https://exp.host/--/api/v2/push/send', {
@@ -129,7 +152,65 @@ export default function Home() {
       console.error('Failed to send notification:', error);
     }
   };
+
+
+  // receive notification
+  useEffect(() => {
+    const setupNotifications = async () => {
+      // Configure notification channel for Android
+      if (Platform.OS === 'android') {
+        await Notifications.setNotificationChannelAsync('default', {
+          name: 'default',
+          importance: Notifications.AndroidImportance.HIGH,
+          vibrationPattern: [0, 250, 250, 250],
+          lightColor: '#FF231F7C',
+        });
+      }
+    };
   
+    setupNotifications();
+  }, []);
+
+  useEffect(() => {
+    
+    Notifications.setNotificationHandler({
+      handleNotification: async (notification) => {
+        console.log('Notification received in foreground', notification);
+        return {
+          shouldShowAlert: false, 
+          shouldPlaySound: true,
+          shouldSetBadge: false,
+        };
+      },
+    });
+  
+    // Luister naar inkomende meldingen
+    const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
+      console.log('Notification tapped', response);
+      Alert.alert('You tapped the notification!');
+    });
+  
+    return () => responseListener.remove();
+  }, []);
+
+
+  useEffect(() => {
+    const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
+      console.log('Notification tapped', response);
+  
+      // Wanneer de gebruiker op de notificatie klikt, kun je bepaalde acties uitvoeren.
+      Alert.alert('You tapped the notification!');
+    });
+  
+    return () => responseListener.remove();
+  }, []);
+
+
+  
+  
+  
+  
+  //checkbox
   const toggleCheckbox = (key) => {
     setSelectedCheckboxes((prev) => ({
       ...prev,
@@ -137,15 +218,22 @@ export default function Home() {
     }));
   };
 
+
+  //handle emergency 
   const handleEmergencyPress = () => {
     setModalContent('emergency');
     setModalVisible(true);
   };
 
+  //handle send press
+
   const handleSendPress = () => {
     setModalContent('send');
     setModalVisible(true);
   };
+
+
+  // handle SOS
 
   const handleSendSOS = () => {
     Alert.alert("SOS verzonden!");
@@ -154,11 +242,13 @@ export default function Home() {
     setModalVisible(false);
   };
 
+  // Stop SOS
   const handleStopSOS = () => {
     setSosSent(false);
     setTimer(0);
   };
 
+  //send feeling
   const handleSendFeeling = () => {
     Alert.alert(`Description: ${description}\nDuration: ${duration}`);
     setModalVisible(false);

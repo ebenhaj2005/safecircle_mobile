@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
 import {
   Text,
   View,
@@ -7,22 +7,61 @@ import {
   ScrollView,
   TouchableOpacity
 } from "react-native";
+import * as SecureStore from "expo-secure-store";
 import { Link } from "expo-router";
+import profilePicture from '../assets/images/PP-removebg-preview.png';
 
 export default function Profile() {
+  const [userName, setUserName] = useState("Loading...");
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        // Haal de userId op uit Secure Storage
+        const userId = await SecureStore.getItemAsync("userId");
+        const accessToken = await SecureStore.getItemAsync("accessToken");
+
+        if (userId && accessToken) {
+          
+          const response = await fetch(`http://10.2.88.103:8080/user/${userId}`, {
+            headers: {
+              Authorization: `Bearer ${accessToken}`, 
+            },
+          });
+
+          if (response.ok) {
+            const userData = await response.json();
+            const fullName = `${userData.firstName} ${userData.lastName}`; 
+            setUserName(fullName);
+            console.log("User data:", userData);
+          } else {
+            console.error("API error:", response.status);
+            setUserName("Unknown User");
+          }
+        } else {
+          setUserName("Guest");
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        setUserName("Error");
+      }
+    };
+
+    fetchUserData();
+  }, []);
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
         {/* Profile Picture */}
-        <View style={styles.profileImageContainer}>
+        <View style={styles.profilePictureContainer}>
           <Image
-            style={styles.profileImage}
-            source={{ uri: "https://randomuser.me/api/portraits/men/1.jpg" }}
+            style={styles.profilePicture}
+            source={profilePicture}
           />
         </View>
 
         {/* Profile Information */}
-        <Text style={styles.name}>John Doe</Text>
+        <Text style={styles.name}>{userName}</Text>
 
         {/* Buttons */}
         <View style={styles.buttonsContainer}>
@@ -70,7 +109,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: "100%"
   },
-  profileImageContainer: {
+  profilePictureContainer: {
     width: 160,
     height: 160,
     borderRadius: 80,
@@ -85,7 +124,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 20
   },
-  profileImage: {
+  profilePicture: {
     width: 150,
     height: 150,
     borderRadius: 75
