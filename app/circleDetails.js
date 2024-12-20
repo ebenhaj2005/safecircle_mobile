@@ -6,11 +6,12 @@ const UpdateCircle = () => {
     const [circleName, setCircleName] = useState('');
     const [circleType, setCircleType] = useState('REGULAR');
     const [available, setAvailable] = useState(true);
+    const [userIds, setUserIds] = useState(''); // Comma-separated user IDs
     const navigation = useNavigation();
     const route = useRoute();
     const { circleId } = route.params || {};
 
-    const token = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI3Iiwicm9sZSI6IlVTRVIiLCJ0eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM0NzM1ODE2fQ.RAk84Mi-zBLIoE_JSM24xeHIKTnpbU_gmylzQFeFQQ4";
+    const token = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI3Iiwicm9sZSI6IlVTRVIiLCJ0eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM0NzM1ODE2fQ.RAk84Mi-zBLIoE_JSM24xeHIKTnpbU_gmylzQFeFQQ4"; // Your provided token
 
     useEffect(() => {
         if (!circleId) {
@@ -39,6 +40,38 @@ const UpdateCircle = () => {
 
         fetchCircleDetails();
     }, [circleId]);
+
+    const handleAddUsersToCircle = async () => {
+        if (!userIds) {
+            alert("Please enter user IDs.");
+            return;
+        }
+
+        const userIdArray = userIds.split(',').map(id => id.trim()).filter(d => id.length > 0); // Clean up user input
+
+        if (userIdArray.length === 0) {
+            alert("Invalid user IDs.");
+            return;
+        }
+
+        try {
+            // Make POST request to add users to the circle
+            const response = await fetch(`http://192.168.129.177:8080/circle/${circleId}/add/${userIdArray.join(',')}`, {
+                method: 'POST',
+                headers: {
+                    Authorization: token,
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!response.ok) throw new Error('Failed to add users to circle');
+            alert('Users added to circle successfully');
+            navigation.goBack();
+        } catch (error) {
+            console.error("Error adding users:", error);
+            alert(`Error: ${error.message}`);
+        }
+    };
 
     const handleUpdateCircleName = async () => {
         try {
@@ -96,6 +129,18 @@ const UpdateCircle = () => {
                 <TouchableOpacity style={styles.updateButton} onPress={handleUpdateCircleName}>
                     <Text style={styles.updateButtonText}>Update Circle Name</Text>
                 </TouchableOpacity>
+
+                <Text style={styles.settingLabel}>User IDs (comma-separated)</Text>
+                <TextInput
+                    style={styles.input}
+                    value={userIds}
+                    onChangeText={setUserIds}
+                    placeholder="Enter user IDs"
+                />
+                <TouchableOpacity style={styles.updateButton} onPress={handleAddUsersToCircle}>
+                    <Text style={styles.updateButtonText}>Add Users to Circle</Text>
+                </TouchableOpacity>
+
                 <TouchableOpacity
                     style={styles.deleteButton}
                     onPress={() => {
@@ -160,6 +205,7 @@ const styles = StyleSheet.create({
         fontWeight: "500",
         color: "#555",
         marginBottom: 12,
+        marginTop:20,
     },
     input: {
         height: 45,

@@ -44,11 +44,11 @@ const Circle = () => {
     const renderHeader = () => (
         <View style={styles.header}>
             <TouchableOpacity onPress={() => setModalVisible(true)}>
-                <Ionicons name="notifications-outline" size={30} color="#CD9594" />
+                <Ionicons name="notifications-outline" size={30} color="#FF" />
             </TouchableOpacity>
             <Text style={styles.title}>Circles</Text>
             <TouchableOpacity onPress={() => navigation.navigate('circleAdd')}>
-                <Ionicons name="add-circle-outline" size={30} color="#CD9594" />
+                <Ionicons name="add-circle-outline" size={30} color="#FF" />
             </TouchableOpacity>
         </View>
     );
