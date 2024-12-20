@@ -2,6 +2,11 @@ import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Button, Modal, Alert, TextInput } from 'react-native';
 import localImage from '../assets/images/geenBackground.png';
 import { Link } from 'expo-router';
+import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
+import * as SecureStore from 'expo-secure-store';
+
+
 
 export default function Home() {
   const [modalVisible, setModalVisible] = useState(false);
@@ -12,6 +17,71 @@ export default function Home() {
   const [timer, setTimer] = useState(0);
   const [intervalId, setIntervalId] = useState(null);
   const [selectedCheckboxes, setSelectedCheckboxes] = useState({}); // For select boxes
+  const [pushToken, setPushToken] = useState(null);
+  const [originalPushToken, setOriginalPushToken] = useState(null);
+  const [userId, setUserId] = useState(null);
+
+  
+
+  // userId
+  useEffect(() => {
+    const fetchUserId = async () => {
+      // get userId out SecureStore
+      const storedUserId = await SecureStore.getItemAsync('userId');
+      setUserId(storedUserId);  // Store the userId in the state
+      //console.log('User ID:', storedUserId);
+    };
+
+    fetchUserId();
+  }, []);
+  
+  //Push token
+  useEffect(() => {
+    const getPushToken = async () => {
+      if (!userId) return; // Wacht totdat userId beschikbaar is
+      try {
+        const { status } = await Notifications.getPermissionsAsync();
+        if (status !== 'granted') {
+          const { status: newStatus } = await Notifications.requestPermissionsAsync();
+          if (newStatus !== 'granted') {
+            Alert.alert('Push-notificatie-permissie geweigerd');
+            return;
+          }
+        }
+  
+        const token = await Notifications.getExpoPushTokenAsync({
+          projectId: Constants.expoConfig.extra.projectId,
+        });
+        //console.log('Push Token:', token.data);
+  
+        const extractedToken = token.data.replace('ExponentPushToken[', '').replace(']', '');
+        setPushToken(extractedToken); 
+        setOriginalPushToken(token.data); 
+  
+
+        // Registreer token bij backend
+        const response = await fetch(`http://10.2.88.103:8080/user/${userId}/register-token`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fcmToken: extractedToken }),
+        });
+  
+        if (response.ok) {
+          console.log('Push token registered');
+        } else {
+          console.error('Failed to register push token:', response.status);
+        }
+      } catch (err) {
+        console.error('Error getting push token:', err.message);
+      }
+    };
+  
+    getPushToken();
+  }, [userId]); // Toevoegen aan dependencies-array
+  
+  
+  
+  //timer
 
   useEffect(() => {
     let interval;
@@ -27,26 +97,7 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [sosSent]);
 
-  const sendLocationToFirebase = async () => {
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Permission to access location was denied');
-        return;
-      }
-
-      const location = await Location.getCurrentPositionAsync({});
-      const { latitude, longitude } = location.coords;
-
-      await addDoc(collection(db, "locations"), {
-        latitude,
-        longitude,
-        timestamp: new Date().toISOString()
-      });
-    } catch (error) {
-      console.error("Error sending location: ", error);
-    }
-  };
+  //location
 
   useEffect(() => {
     let locationInterval;
@@ -59,6 +110,107 @@ export default function Home() {
     return () => clearInterval(locationInterval);
   }, [sosSent]);
 
+
+  // send notification
+
+  const sendPushNotification = async () => {
+    if (!pushToken) {
+      console.error('No push token available.');
+      return;
+    }
+
+    try {
+      console.log('Sending push notification...');
+
+      const message = {
+        to: originalPushToken,  // Use the pushToken stored in the state
+        sound: 'default',
+        title: 'SOS Alert',
+        body: 'SOS alert sent, press stop to stop it.',
+        data: { extraData: 'extra data', userId: userId },
+        badge: 1,  // app logo
+        priority: 'high',  
+        channelId: 'default',  // channels voor Android
+        //_displayInForeground: true, more like an alert
+      };
+
+      const response = await fetch('https://exp.host/--/api/v2/push/send', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(message),
+      });
+
+      if (response.ok) {
+        console.log('Notification sent successfully!');
+      } else {
+        console.error('Failed to send notification:', response.status);
+      }
+    } catch (error) {
+      console.error('Failed to send notification:', error);
+    }
+  };
+
+
+  // receive notification
+  useEffect(() => {
+    const setupNotifications = async () => {
+      // Configure notification channel for Android
+      if (Platform.OS === 'android') {
+        await Notifications.setNotificationChannelAsync('default', {
+          name: 'default',
+          importance: Notifications.AndroidImportance.HIGH,
+          vibrationPattern: [0, 250, 250, 250],
+          lightColor: '#FF231F7C',
+        });
+      }
+    };
+  
+    setupNotifications();
+  }, []);
+
+  useEffect(() => {
+    
+    Notifications.setNotificationHandler({
+      handleNotification: async (notification) => {
+        console.log('Notification received in foreground', notification);
+        return {
+          shouldShowAlert: false, 
+          shouldPlaySound: true,
+          shouldSetBadge: false,
+        };
+      },
+    });
+  
+    // Luister naar inkomende meldingen
+    const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
+      console.log('Notification tapped', response);
+      Alert.alert('You tapped the notification!');
+    });
+  
+    return () => responseListener.remove();
+  }, []);
+
+
+  useEffect(() => {
+    const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
+      console.log('Notification tapped', response);
+  
+      // Wanneer de gebruiker op de notificatie klikt, kun je bepaalde acties uitvoeren.
+      Alert.alert('You tapped the notification!');
+    });
+  
+    return () => responseListener.remove();
+  }, []);
+
+
+  
+  
+  
+  
+  //checkbox
   const toggleCheckbox = (key) => {
     setSelectedCheckboxes((prev) => ({
       ...prev,
@@ -66,28 +218,37 @@ export default function Home() {
     }));
   };
 
+
+  //handle emergency 
   const handleEmergencyPress = () => {
     setModalContent('emergency');
     setModalVisible(true);
   };
+
+  //handle send press
 
   const handleSendPress = () => {
     setModalContent('send');
     setModalVisible(true);
   };
 
+
+  // handle SOS
+
   const handleSendSOS = () => {
-    Alert.alert("SOS sent!");
+    Alert.alert("SOS verzonden!");
     setSosSent(true);
-    sendLocationToFirebase(); // Directe eerste locatie-update
+    sendPushNotification();  // Send the push notification
     setModalVisible(false);
   };
 
+  // Stop SOS
   const handleStopSOS = () => {
     setSosSent(false);
     setTimer(0);
   };
 
+  //send feeling
   const handleSendFeeling = () => {
     Alert.alert(`Description: ${description}\nDuration: ${duration}`);
     setModalVisible(false);
@@ -113,7 +274,10 @@ export default function Home() {
             />
           </TouchableOpacity>
         </>
+        
       )}
+     
+
       <View style={styles.separator} />
       <Text style={styles.subText}>Feeling Unsafe</Text>
       <View style={styles.checklist}>
