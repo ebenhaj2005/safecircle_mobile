@@ -52,8 +52,10 @@ export default function LoginPage() {
     }
   
     try {
-      console.log("Sending login request...");
-      const response = await fetch('http://10.2.88.103:8080/user/authenticate', {
+
+      const response = await fetch('http://192.168.129.177:8080/user/authenticate', { // IP-adres van je thuis wifi
+
+
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
