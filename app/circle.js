@@ -2,34 +2,61 @@ import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Modal } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import * as SecureStore from "expo-secure-store";
 
 const Circle = () => {
-    const [modalVisible, setModalVisible] = useState(false);
-    const [circles, setCircles] = useState([]); // Fetched circles from the backend
-    const numColumns = 2;
-    const navigation = useNavigation();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [circles, setCircles] = useState([]);
+  const [userId, setUserId] = useState(null);
+  const [accessToken, setAccessToken] = useState(null);
+  const numColumns = 2;
+  const navigation = useNavigation();
 
-    const token = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI3Iiwicm9sZSI6IlVTRVIiLCJ0eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM0NzM1ODE2fQ.RAk84Mi-zBLIoE_JSM24xeHIKTnpbU_gmylzQFeFQQ4";
-    const url = 'http://192.168.129.177:8080/circle/getAll/7';
+  useEffect(() => {
+    const fetchAuthData = async () => {
+      try {
+        const storedUserId = await SecureStore.getItemAsync("userId");
+        const storedAccessToken = await SecureStore.getItemAsync("accessToken");
 
-    useEffect(() => {
-        const fetchCircles = async () => {
-            try {
-                const response = await fetch(url, {
-                    method: 'GET',
-                    headers: { 'Authorization': token },
-                });
+        if (storedUserId && storedAccessToken) {
+          setUserId(storedUserId);
+          setAccessToken(storedAccessToken);
+        } else {
+          console.error("Authentication details not found");
+        }
+      } catch (error) {
+        console.error("Error fetching authentication data:", error);
+      }
+    };
 
-                if (!response.ok) throw new Error('Network response was not ok');
-                const data = await response.json();
-                setCircles(data);
-            } catch (error) {
-                console.error("Error fetching data:", error);
-            }
-        };
+    fetchAuthData();
+  }, []);
 
-        fetchCircles();
-    }, [circles]);
+  useEffect(() => {
+    const fetchCircles = async () => {
+      if (!userId || !accessToken) {
+        console.error("User ID or Access Token is missing");
+        return;
+      }
+
+      const url = `http://10.2.144.13:8080/circle/getAll/${userId}`;
+
+      try {
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: { 'Authorization': `Bearer ${accessToken}` },
+        });
+
+        if (!response.ok) throw new Error(`Network response was not ok: ${response.status}`);
+        const data = await response.json();
+        setCircles(data);
+      } catch (error) {
+        console.error("Error fetching circles data:", error);
+      }
+    };
+
+    fetchCircles();
+  }, [userId, accessToken]); // Fetch circles when userId or accessToken changes
 
     const renderItem = ({ item }) => (
         <View style={styles.circleContainer}>

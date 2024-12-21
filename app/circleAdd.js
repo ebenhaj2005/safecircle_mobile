@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -8,19 +8,39 @@ import {
   Alert,
   Switch
 } from "react-native";
-import { Picker } from "@react-native-picker/picker"; // Updated import
+import { Picker } from "@react-native-picker/picker";
 import { useNavigation } from "@react-navigation/native";
+import * as SecureStore from "expo-secure-store";
 
 const CircleAdd = () => {
   const [circleName, setCircleName] = useState("");
-  const [circleType, setCircleType] = useState("REGULAR"); // Default value
-  const [available, setAvailable] = useState(true); // Default value
+  const [circleType, setCircleType] = useState("REGULAR");
+  const [available, setAvailable] = useState(true);
   const navigation = useNavigation();
 
-  const userId = 7; // Replace with dynamic user ID if needed
-  const token =
-    "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI3Iiwicm9sZSI6IlVTRVIiLCJ0eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM0NzM1ODE2fQ.RAk84Mi-zBLIoE_JSM24xeHIKTnpbU_gmylzQFeFQQ4";
-  const addCircleUrl = `http://192.168.129.177:8080/circle/${userId}/create`;
+  const [userId, setUserId] = useState(null);
+  const [accessToken, setAccessToken] = useState(null);
+
+  useEffect(() => {
+    const fetchAuthData = async () => {
+      try {
+        const storedUserId = await SecureStore.getItemAsync("userId");
+        const storedAccessToken = await SecureStore.getItemAsync("accessToken");
+
+        if (storedUserId && storedAccessToken) {
+          setUserId(storedUserId);
+          setAccessToken(storedAccessToken);
+          
+        } else {
+          Alert.alert("Error", "Authentication details not found");
+        }
+      } catch (error) {
+        console.error("Error fetching authentication data:", error);
+      }
+    };
+
+    fetchAuthData();
+  }, []);
 
   const handleAddCircle = async () => {
     if (!circleName.trim()) {
@@ -28,11 +48,18 @@ const CircleAdd = () => {
       return;
     }
 
+    if (!userId || !accessToken) {
+      Alert.alert("Error", "User ID or Access Token is missing");
+      return;
+    }
+
+    const addCircleUrl = `http://10.2.144.13:8080/circle/${userId}/create`;
+
     try {
       const response = await fetch(addCircleUrl, {
         method: "POST",
         headers: {
-          Authorization: token,
+          Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -44,7 +71,7 @@ const CircleAdd = () => {
 
       if (response.ok) {
         Alert.alert("Success", "Circle added successfully!");
-        navigation.goBack(); // Navigate back to the Circles page
+        navigation.goBack();
       } else {
         const result = await response.json();
         Alert.alert("Error", result.message || "Failed to add circle");

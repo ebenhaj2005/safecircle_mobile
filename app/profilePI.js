@@ -29,7 +29,7 @@ export default function ProfilePI() {
         const accessToken = await SecureStore.getItemAsync("accessToken");
 
         if (userId && accessToken) {
-          const response = await fetch(`http://10.2.88.103:8080/user/${userId}`, {
+          const response = await fetch(`http://10.2.144.13:8080/user/${userId}`, {
             headers: {
               Authorization: `Bearer ${accessToken}`,
             },
