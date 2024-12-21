@@ -1,38 +1,47 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Switch } from "react-native";
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';  // Import useTranslation
+import i18n from '../i18n'; // Import i18n-config bestand
 
 export default function Settings() {
   const navigation = useNavigation();
-  const [language, setLanguage] = useState("en");
+  const { t } = useTranslation(); // Krijg de vertaalfunctie van i18n
+  const [language, setLanguage] = useState(i18n.language); // Bewaar de geselecteerde taal
   const [modalVisible, setModalVisible] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
 
   const languages = [
-    { label: "Dutch", value: "nl" },
-    { label: "English", value: "en" },
-    { label: "Spanish", value: "es" },
-    { label: "French", value: "fr" },
-    { label: "German", value: "de" }
+    { label: t('dutch'), value: 'nl' },
+    { label: t('english'), value: 'en' },
+    { label: t('french'), value: 'fr' },
+    { label: t('spanish'), value: 'es' },
+    { label: t('german'), value: 'de' },
   ];
+
+  const handleLanguageChange = (lang) => {
+    setLanguage(lang);
+    i18n.changeLanguage(lang); // Verander de taal in de hele app
+    setModalVisible(false); // Sluit de modal
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Text style={styles.backButtonText}>Back</Text>
+          <Text style={styles.backButtonText}>{t('back')}</Text>  {/* Vertaal de "Back" knop */}
         </TouchableOpacity>
-        <Text style={styles.title}>Settings</Text>
+        <Text style={styles.title}>{t('settings')}</Text> {/* Vertaal de titel */}
 
         {/* Language Settings */}
         <View style={styles.settingContainer}>
-          <Text style={styles.settingLabel}>Language</Text>
+          <Text style={styles.settingLabel}>{t('language')}</Text> {/* Vertaal de label */}
           <TouchableOpacity
             style={styles.dropdown}
             onPress={() => setModalVisible(true)}
           >
             <Text style={styles.dropdownText}>
-              {languages.find(lang => lang.value === language).label}
+              {languages.find(lang => lang.value === language)?.label}
             </Text>
           </TouchableOpacity>
           <Modal
@@ -50,10 +59,7 @@ export default function Settings() {
                   <TouchableOpacity
                     key={lang.value}
                     style={styles.modalItem}
-                    onPress={() => {
-                      setLanguage(lang.value);
-                      setModalVisible(false);
-                    }}
+                    onPress={() => handleLanguageChange(lang.value)}
                   >
                     <Text style={styles.modalItemText}>{lang.label}</Text>
                   </TouchableOpacity>
@@ -65,7 +71,7 @@ export default function Settings() {
 
         {/* Notification Settings */}
         <View style={styles.settingContainer}>
-          <Text style={styles.settingLabel}>Notifications</Text>
+          <Text style={styles.settingLabel}>{t('notifications')}</Text> {/* Vertaal de notificaties tekst */}
           <Switch
             value={notificationsEnabled}
             onValueChange={(value) => setNotificationsEnabled(value)}

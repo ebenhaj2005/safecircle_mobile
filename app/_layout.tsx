@@ -19,7 +19,7 @@ export default function RootLayout() {
     segments.includes("contact") ||
     segments.includes("profilePI");
   useEffect(() => {
-    router.replace("/login");
+    return router.push("/login");
   }, [router]);
   return (
     <>

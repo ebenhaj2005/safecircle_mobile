@@ -60,7 +60,7 @@ export default function Home() {
   
 
         // Registreer token bij backend
-        const response = await fetch(`http://10.2.144.13:8080/user/${userId}/register-token`, {
+        const response = await fetch(`http://192.168.0.110:8080/user/${userId}/register-token`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ fcmToken: extractedToken }),
@@ -103,7 +103,7 @@ export default function Home() {
     let locationInterval;
     if (sosSent) {
       locationInterval = setInterval(() => {
-        sendLocationToFirebase();
+        //sendLocationToFirebase();
       }, 60000); // Elke 60 seconden
     }
 

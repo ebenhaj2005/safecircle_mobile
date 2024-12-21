@@ -16,6 +16,7 @@ const Circle = () => {
     const fetchAuthData = async () => {
       try {
         const storedUserId = await SecureStore.getItemAsync("userId");
+        console.log("Stored User ID: ", storedUserId);
         const storedAccessToken = await SecureStore.getItemAsync("accessToken");
 
         if (storedUserId && storedAccessToken) {
@@ -39,7 +40,7 @@ const Circle = () => {
         return;
       }
 
-      const url = `http://10.2.144.13:8080/circle/getAll/${userId}`;
+      const url = `http://192.168.0.110:8080/circle/getAll/${userId}`;
 
       try {
         const response = await fetch(url, {

@@ -58,7 +58,7 @@ const UpdateCircle = () => {
       if (!accessToken) return;
 
       try {
-        const response = await fetch(`http://10.2.144.13:8080/circle/${circleId}`, {
+        const response = await fetch(`http://192.168.0.110:8080/circle/${circleId}`, {
           method: 'GET',
           headers: { Authorization: `Bearer ${accessToken}` },
         });
@@ -85,7 +85,7 @@ const UpdateCircle = () => {
 
     try {
         const response = await fetch(
-            `http://10.2.144.13:8080/user/search?firstName=${firstName}&lastName=${lastName}`,
+            `http://192.168.0.110:8080/user/search?firstName=${firstName}&lastName=${lastName}`,
             {
                 method: 'GET',
                 headers: { Authorization: `Bearer ${accessToken}` },
@@ -119,7 +119,7 @@ const handleAddUserToList = (userId) => {
 
     try {
       const response = await fetch(
-        `http://10.2.144.13:8080/circle/${circleId}/add/${selectedUserIds.join(',')}`,
+        `http://192.168.0.110:8080/circle/${circleId}/add/${selectedUserIds.join(',')}`,
         {
           method: 'POST',
           headers: {
@@ -141,7 +141,7 @@ const handleAddUserToList = (userId) => {
   const handleUpdateCircleName = async () => {
     try {
       const response = await fetch(
-        `http://10.2.144.13:8080/circle/${circleId}/update`,
+        `http://192.168.0.110:8080/circle/${circleId}/update`,
         {
           method: 'PUT',
           headers: {
@@ -168,7 +168,7 @@ const handleAddUserToList = (userId) => {
   const handleDeleteCircle = async () => {
     try {
       const response = await fetch(
-        `http://10.2.144.13:8080/circle/${circleId}/delete`,
+        `http://192.168.0.110:8080/circle/${circleId}/delete`,
         {
           method: 'DELETE',
           headers: { Authorization: `Bearer ${accessToken}` },

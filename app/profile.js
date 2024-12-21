@@ -23,7 +23,7 @@ export default function Profile() {
 
         if (userId && accessToken) {
           
-          const response = await fetch(`http://10.2.144.13:8080/user/${userId}`, {
+          const response = await fetch(`http://192.168.0.110:8080/user/${userId}`, {
             headers: {
               Authorization: `Bearer ${accessToken}`, 
             },
@@ -76,7 +76,7 @@ export default function Profile() {
             </Link>
           </TouchableOpacity>
           <TouchableOpacity style={styles.button}>
-            <Link href="/settings" style={styles.link}>
+            <Link href="/app/settings" style={styles.link}>
               <Text style={styles.buttonText}>App Settings</Text>
             </Link>
           </TouchableOpacity>
