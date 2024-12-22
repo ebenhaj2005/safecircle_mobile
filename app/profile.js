@@ -23,7 +23,7 @@ export default function Profile() {
 
         if (userId && accessToken) {
           
-          const response = await fetch(`http://192.168.0.110:8080/user/${userId}`, {
+          const response = await fetch(`http://192.168.129.177:8080/user/${userId}`, {
             headers: {
               Authorization: `Bearer ${accessToken}`, 
             },

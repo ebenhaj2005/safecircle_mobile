@@ -60,7 +60,7 @@ export default function Home() {
   
 
         // Registreer token bij backend
-        const response = await fetch(`http://192.168.0.110:8080/user/${userId}/register-token`, {
+        const response = await fetch(`http://192.168.129.177:8080/user/${userId}/register-token`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ fcmToken: extractedToken }),

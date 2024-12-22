@@ -49,7 +49,7 @@ export default function SignUpPage() {
     try {
 
 
-      const response = await fetch('http://192.168.0.110:8080/user/create', { // IP-adres van je thuis wifi (ipconfig)
+      const response = await fetch('http://192.168.129.177:8080/user/create', { // IP-adres van je thuis wifi (ipconfig)
 
 
         method: 'POST',
