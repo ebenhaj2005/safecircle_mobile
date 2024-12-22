@@ -3,23 +3,39 @@ import {
   View,
   Text,
   StyleSheet,
+  TextInput,
   TouchableOpacity,
   Alert,
   FlatList,
+  ScrollView,
   Modal,
+  KeyboardAvoidingView,
+  Platform
 } from "react-native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import * as SecureStore from "expo-secure-store";
 
-const InvitationPage = ({ navigation }) => {
+const UpdateCircle = () => {
+  const [circleName, setCircleName] = useState("");
+  const [circleType, setCircleType] = useState("REGULAR");
+  const [available, setAvailable] = useState(true);
   const [accessToken, setAccessToken] = useState(null);
-  const [invitations, setInvitations] = useState([]);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [selectedInvitation, setSelectedInvitation] = useState(null);
+  const navigation = useNavigation();
+  const route = useRoute();
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [selectedUserIds, setSelectedUserIds] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null); // To store the user to be added
+  const [modalVisible, setModalVisible] = useState(false); // To control modal visibility
+
+  const { circleId } = route.params || {};
 
   useEffect(() => {
     const fetchAuthData = async () => {
       try {
         const storedAccessToken = await SecureStore.getItemAsync("accessToken");
+
         if (storedAccessToken) {
           setAccessToken(storedAccessToken);
         } else {
@@ -34,108 +50,251 @@ const InvitationPage = ({ navigation }) => {
   }, []);
 
   useEffect(() => {
-    if (accessToken) {
-      fetchInvitations();
+    if (!circleId) {
+      Alert.alert("Error", "Circle ID is missing!");
+      navigation.goBack();
+      return;
     }
-  }, [accessToken]);
 
-  const fetchInvitations = async () => {
-    try {
-      const response = await fetch(
-        "http://192.168.129.177:8080/invitations", // Replace with the actual endpoint to fetch invitations
-        {
-          method: 'GET',
-          headers: { Authorization: `Bearer ${accessToken}` },
-        }
-      );
+    const fetchCircleDetails = async () => {
+      if (!accessToken) return;
 
-      if (!response.ok) throw new Error('Failed to fetch invitations');
-      const data = await response.json();
-      setInvitations(data);
-    } catch (error) {
-      console.error("Error fetching invitations:", error);
-      Alert.alert("Error", `Failed to load invitations: ${error.message}`);
-    }
-  };
+      try {
+        const response = await fetch(
+          `http://192.168.129.177:8080/circle/${circleId}`,
+          {
+            method: "GET",
+            headers: { Authorization: `Bearer ${accessToken}` }
+          }
+        );
 
-  const handleAcceptInvitation = async (invitationId, circleId) => {
-    if (!accessToken || !circleId) {
-      console.error("Circle ID or access token is missing");
+        if (!response.ok) throw new Error("Failed to fetch circle details");
+        const data = await response.json();
+        setCircleName(data.circleName);
+        setCircleType(data.circleType);
+        setAvailable(data.available);
+      } catch (error) {
+        console.error("Error fetching circle details:", error);
+        Alert.alert("Error", `Failed to load circle details: ${error.message}`);
+      }
+    };
+
+    fetchCircleDetails();
+  }, [circleId, accessToken]);
+
+  const handleSearchUsers = async () => {
+    if (!firstName.trim() && !lastName.trim()) {
+      Alert.alert("Error", "Please enter at least a first name or last name.");
       return;
     }
 
     try {
       const response = await fetch(
-        `http://192.168.129.177:8080/invitation/${invitationId}/${circleId}/accept`,
+        `http://192.168.129.177:8080/user/search?firstName=${firstName}&lastName=${lastName}`,
         {
-          method: 'PUT',
+          method: "GET",
+          headers: { Authorization: `Bearer ${accessToken}` }
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to search users");
+      const data = await response.json();
+      setSearchResults(data);
+    } catch (error) {
+      console.error("Error searching users:", error);
+      Alert.alert("Error", `Failed to search users: ${error.message}`);
+    }
+  };
+
+  const handleUserSelect = (user) => {
+    setSelectedUser(user); // Set the user for the confirmation modal
+    setModalVisible(true); // Show the modal
+  };
+
+  const handleSendInvitation = async () => {
+    if (!selectedUser) return;
+
+    try {
+      // Retrieve sender (logged-in user) ID from SecureStore
+      const storedUserId = await SecureStore.getItemAsync("userId");
+      if (!storedUserId) {
+        console.error("User ID is missing");
+        Alert.alert("Error", "User ID is missing");
+        return;
+      }
+
+      // Prepare the invitation data
+      const senderId = storedUserId; // Sender is the logged-in user
+      const receiverId = selectedUser.userId; // Receiver is the selected user
+
+      const response = await fetch(
+        `http://192.168.129.177:8080/invitation/create/${circleId}/from/${senderId}/to/${receiverId}`,
+        {
+          method: "POST",
           headers: {
             Authorization: `Bearer ${accessToken}`,
-          },
+            "Content-Type": "application/json"
+          }
         }
       );
 
-      if (!response.ok) throw new Error('Failed to accept invitation');
-      Alert.alert("Success", "Invitation accepted!");
-
-      // Re-fetch the circles after accepting the invitation
-      fetchUserCircles();
-
+      if (!response.ok) throw new Error("Failed to send invitation");
+      Alert.alert("Success", "Invitation sent successfully.");
+      setModalVisible(false); // Hide the modal after sending invitation
     } catch (error) {
-      console.error("Error accepting invitation:", error);
-      Alert.alert("Error", `Failed to accept invitation: ${error.message}`);
+      console.error("Error sending invitation:", error);
+      Alert.alert("Error", `Failed to send invitation: ${error.message}`);
     }
-  };
-
-  const fetchUserCircles = async () => {
-    // Fetch the user's circles after accepting the invitation
-    try {
-      const response = await fetch(
-        "http://192.168.129.177:8080/user/circles", // Replace with the actual endpoint to fetch circles
-        {
-          method: 'GET',
-          headers: { Authorization: `Bearer ${accessToken}` },
-        }
-      );
-
-      if (!response.ok) throw new Error('Failed to fetch user circles');
-      const data = await response.json();
-      // Update the state with the circles data
-      // setUserCircles(data);
-    } catch (error) {
-      console.error("Error fetching user circles:", error);
-    }
-  };
-
-  const handleInvitationSelect = (invitation) => {
-    setSelectedInvitation(invitation);
-    setModalVisible(true);  // Show the modal for accepting invitation
   };
 
   const handleCancelInvitation = () => {
-    setModalVisible(false);
+    setModalVisible(false); // Hide the modal if user cancels
+  };
+
+  const handleAddUsersToCircle = async () => {
+    // Logic to add users to the circle (if any other action needed)
+    navigation.goBack();
+  };
+
+  const handleUpdateCircleName = async () => {
+    try {
+      const response = await fetch(
+        `http://192.168.129.177:8080/circle/${circleId}/update`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            circleName,
+            circleType,
+            available
+          })
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to update circle");
+      Alert.alert("Success", "Circle updated successfully");
+      navigation.goBack();
+    } catch (error) {
+      console.error("Error updating circle:", error);
+      Alert.alert("Error", `Failed to update circle: ${error.message}`);
+    }
+  };
+
+  const handleDeleteCircle = async () => {
+    try {
+      const response = await fetch(
+        `http://192.168.129.177:8080/circle/${circleId}/delete`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${accessToken}` }
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to delete circle");
+      Alert.alert("Success", "Circle deleted successfully");
+      navigation.goBack();
+    } catch (error) {
+      console.error("Error deleting circle:", error);
+      Alert.alert("Error", `Failed to delete circle: ${error.message}`);
+    }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Invitations</Text>
-      <FlatList
-        data={invitations}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Text style={styles.backButtonText}>Back</Text>
+        </TouchableOpacity>
+        <Text style={styles.title}>Update Circle</Text>
+        <View style={styles.settingContainer}>
+          <Text style={styles.settingLabel}>Circle Name</Text>
+          <TextInput
+            style={styles.input}
+            value={circleName}
+            onChangeText={setCircleName}
+            placeholder="Circle Name"
+          />
           <TouchableOpacity
-            style={styles.invitationItem}
-            onPress={() => handleInvitationSelect(item)}
+            style={styles.updateButton}
+            onPress={handleUpdateCircleName}
           >
-            <Text style={styles.invitationText}>
-              Invitation from {item.sender.firstName} {item.sender.lastName}
-            </Text>
-            <Text>{item.circleName}</Text>
+            <Text style={styles.updateButtonText}>Update Circle Name</Text>
           </TouchableOpacity>
-        )}
-      />
+        </View>
 
-      {/* Modal for accepting invitation */}
+        <View style={styles.settingContainer}>
+          <Text style={styles.settingLabel}>Search Users</Text>
+          <TextInput
+            style={styles.input}
+            value={firstName}
+            onChangeText={setFirstName}
+            placeholder="First Name"
+          />
+          <TextInput
+            style={styles.input}
+            value={lastName}
+            onChangeText={setLastName}
+            placeholder="Last Name"
+          />
+          <TouchableOpacity
+            style={styles.updateButton}
+            onPress={handleSearchUsers}
+          >
+            <Text style={styles.updateButtonText}>Search</Text>
+          </TouchableOpacity>
+
+          <FlatList
+            data={searchResults}
+            keyExtractor={(item) => item.email}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                onPress={() => handleUserSelect(item)} // Show modal when user is selected
+                style={styles.resultItem}
+              >
+                <Text>{`${item.firstName} ${item.lastName}`}</Text>
+                <Text>{item.email}</Text>
+              </TouchableOpacity>
+            )}
+          />
+
+          <TouchableOpacity
+            style={styles.updateButton}
+            onPress={handleAddUsersToCircle}
+          >
+            <Text style={styles.updateButtonText}>Add Users to Circle</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.deleteButton}
+            onPress={() => {
+              Alert.alert(
+                "Delete Circle",
+                "Are you sure you want to delete this circle?",
+                [
+                  { text: "Cancel", style: "cancel" },
+                  {
+                    text: "Delete",
+                    style: "destructive",
+                    onPress: handleDeleteCircle
+                  }
+                ]
+              );
+            }}
+          >
+            <Text style={styles.deleteButtonText}>Delete Circle</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+
+      {/* Modal for user selection confirmation */}
       <Modal
         visible={modalVisible}
         transparent={true}
@@ -145,18 +304,13 @@ const InvitationPage = ({ navigation }) => {
         <View style={styles.modalBackground}>
           <View style={styles.modalContainer}>
             <Text style={styles.modalText}>
-              Are you sure you want to accept the invitation to join the circle:{" "}
-              {selectedInvitation?.circleName}?
+              Are you sure you want to add {selectedUser?.firstName}{" "}
+              {selectedUser?.lastName} to the circle?
             </Text>
             <View style={styles.modalButtons}>
               <TouchableOpacity
                 style={styles.modalButton}
-                onPress={() =>
-                  handleAcceptInvitation(
-                    selectedInvitation.id,
-                    selectedInvitation.circleId
-                  )
-                }
+                onPress={handleSendInvitation}
               >
                 <Text style={styles.modalButtonText}>Yes</Text>
               </TouchableOpacity>
@@ -170,7 +324,7 @@ const InvitationPage = ({ navigation }) => {
           </View>
         </View>
       </Modal>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -178,59 +332,130 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f7f7f7",
-    marginTop: 40,
+    marginTop: 40
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    paddingHorizontal: 20,
+    paddingBottom: 20
+  },
+  backButton: {
+    alignSelf: "flex-start",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    marginBottom: 20,
+    backgroundColor: "#CD9594",
+    borderRadius: 10
+  },
+  resultItem: {
+    padding: 10,
+    backgroundColor: "#f0f0f0",
+    borderRadius: 8,
+    marginBottom: 10
+  },
+  backButtonText: {
+    fontSize: 16,
+    color: "#fff",
+    fontWeight: "bold"
   },
   title: {
     fontSize: 28,
     fontWeight: "600",
     marginBottom: 30,
     color: "#333",
-    textAlign: "center",
+    textAlign: "center"
   },
-  invitationItem: {
-    padding: 10,
-    backgroundColor: "#f0f0f0",
-    borderRadius: 8,
-    marginBottom: 10,
+  settingContainer: {
+    width: "100%",
+    backgroundColor: "#fff",
+    padding: 20,
+    borderRadius: 10,
+    marginVertical: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 10
   },
-  invitationText: {
+  settingLabel: {
     fontSize: 18,
     fontWeight: "500",
-    marginBottom: 5,
+    color: "#555",
+    marginBottom: 12
+  },
+  input: {
+    height: 45,
+    borderColor: "#ddd",
+    borderWidth: 1,
+    marginBottom: 20,
+    paddingHorizontal: 15,
+    borderRadius: 8,
+    fontSize: 16,
+    backgroundColor: "#fafafa"
+  },
+  updateButton: {
+    backgroundColor: "#CD9594",
+    paddingVertical: 15,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 10
+  },
+  updateButtonText: {
+    fontSize: 18,
+    color: "#fff",
+    fontWeight: "600"
+  },
+  deleteButton: {
+    backgroundColor: "#ff4d4f",
+    paddingVertical: 15,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 20,
+    position: "absolute",
+    bottom: 20,
+    left: 20,
+    right: 20
+  },
+  deleteButtonText: {
+    fontSize: 18,
+    color: "#fff",
+    fontWeight: "600"
   },
   modalBackground: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    backgroundColor: "rgba(0, 0, 0, 0.5)"
   },
   modalContainer: {
     width: 300,
     padding: 20,
     backgroundColor: "white",
     borderRadius: 8,
-    alignItems: "center",
+    alignItems: "center"
   },
   modalText: {
     fontSize: 18,
-    marginBottom: 20,
+    marginBottom: 20
   },
   modalButtons: {
     flexDirection: "row",
     justifyContent: "space-between",
-    width: "100%",
+    width: "100%"
   },
   modalButton: {
     backgroundColor: "#CD9594",
     paddingVertical: 10,
     borderRadius: 8,
     width: "45%",
-    alignItems: "center",
+    alignItems: "center"
   },
   modalButtonText: {
     fontSize: 16,
-    color: "#fff",
-  },
+    color: "#fff"
+  }
 });
 
-export default InvitationPage;
+export default UpdateCircle;

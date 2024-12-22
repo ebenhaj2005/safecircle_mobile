@@ -5,7 +5,8 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
-  Modal
+  Modal,
+  Alert
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
@@ -96,10 +97,10 @@ const Circle = () => {
       console.error("Circle ID, invitation ID, or receiver ID is missing");
       return;
     }
-  
+
     try {
       const response = await fetch(
-        `http://192.168.129.177:8080/invitation/${invitationId}/${circleId}/${receiverId}/accept`,  // Ensure receiverId is a single value
+        `http://192.168.129.177:8080/invitation/${invitationId}/${circleId}/${receiverId}/accept`,
         {
           method: "PUT",
           headers: {
@@ -107,18 +108,20 @@ const Circle = () => {
           },
         }
       );
-  
+
       if (!response.ok) throw new Error("Failed to accept invitation");
       Alert.alert("Success", "Invitation accepted!");
-  
-      // Re-fetch the circles after accepting the invitation
-      fetchUserCircles();
+
+      // Fetch updated circles after accepting the invitation
+      fetchCircles(); // Re-fetch circles to include the newly joined circle
+      setInvitations((prev) =>
+        prev.filter((inv) => inv.invitationId !== invitationId)
+      ); // Remove the accepted invitation from the list
     } catch (error) {
       console.error("Error accepting invitation:", error);
       Alert.alert("Error", `Failed to accept invitation: ${error.message}`);
     }
   };
-  
 
   const handleDeclineInvitation = async (invitationId) => {
     const url = `http://192.168.129.177:8080/invitation/${invitationId}/decline`;
@@ -162,7 +165,7 @@ const Circle = () => {
       >{`Invitation from User ${item.senderId} to join ${item.circleName}`}</Text>
       <View style={styles.invitationButtons}>
         <TouchableOpacity
-          onPress={() => handleAcceptInvitation(item.invitationId)}
+          onPress={() => handleAcceptInvitation(item.invitationId, item.circleId, userId)}
           style={styles.acceptButton}
         >
           <Text style={styles.buttonText}>Accept</Text>
