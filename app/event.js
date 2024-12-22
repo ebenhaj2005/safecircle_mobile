@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,19 +9,90 @@ import {
 } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { Link } from "expo-router";
-
-const events = [
-  { id: "1", name: "Tomorrowland", date: "27/11/2024 - 30/11/2024" },
-  { id: "2", name: "Couleur Café", date: "04/12/2024 - 08/12/2024" },
-  { id: "3", name: "GRASPOP", date: "03/02/2025 - 07/02/2025" }
-];
+import * as SecureStore from "expo-secure-store"; // Voor toegang tot opgeslagen tokens
 
 export default function EventsPage() {
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [accessToken, setAccessToken] = useState(null);
+
+  // Haal het accessToken op uit SecureStore
+  useEffect(() => {
+    const fetchAccessToken = async () => {
+      try {
+        const token = await SecureStore.getItemAsync("accessToken");
+        if (token) {
+          setAccessToken(token);
+        } else {
+          throw new Error("Access token not found. Please log in.");
+        }
+      } catch (err) {
+        setError(err.message);
+      }
+    };
+
+    fetchAccessToken();
+  }, []);
+
+  // Haal events op zodra het token beschikbaar is
+  useEffect(() => {
+    const fetchEvents = async () => {
+      if (!accessToken) return; // Wacht op het accessToken
+
+      try {
+        const response = await fetch(
+          "http://192.168.0.110:8080/circle/event/all",
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch events: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setEvents(data); // Zorg dat de server een array van events terugstuurt
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, [accessToken]);
+
+  const filteredEvents = events.filter((event) =>
+    event.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.loadingText}>Loading events...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.errorText}>Error: {error}</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Events</Text>
-
         <TouchableOpacity style={styles.addButton}>
           <Link href="/eventrequestpage" style={styles.link}>
             <Icon name="add-circle-outline" size={29} color="#d68787" />
@@ -38,14 +109,16 @@ export default function EventsPage() {
         />
         <TextInput
           style={styles.searchInput}
-          placeholder="search events"
+          placeholder="Search events"
           placeholderTextColor="#a29da0"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
         />
       </View>
 
       <FlatList
-        data={events}
-        keyExtractor={(item) => item.id}
+        data={filteredEvents}
+        keyExtractor={(item) => String(item.id)}
         renderItem={({ item }) => (
           <View style={styles.eventCard}>
             <View>
@@ -59,13 +132,13 @@ export default function EventsPage() {
         )}
       />
 
-      {/* Scan QR Code Button */}
       <TouchableOpacity style={styles.scanButton}>
         <Text style={styles.scanButtonText}>Scan QR-code</Text>
       </TouchableOpacity>
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
