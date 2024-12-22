@@ -35,26 +35,35 @@ const Circle = () => {
 
   useEffect(() => {
     const fetchCircles = async () => {
-      if (!userId || !accessToken) {
-        console.error("User ID or Access Token is missing");
-        return;
-      }
+        if (!userId || !accessToken) {
+          //console.error("User ID or Access Token is missing");
+          return;
+        }
+      
+        const url = `http://192.168.0.110:8080/circle/getAll/${userId}`;
+      
+        try {
+          const response = await fetch(url, {
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${accessToken}` },
+          });
+      
+          // Controleer of de response een JSON is
+          const contentType = response.headers.get("Content-Type");
+      
+          if (!contentType || !contentType.includes("application/json")) {
+            throw new Error("Response is not in JSON format.");
+          }
+      
+          const data = await response.json();
+            console.log("Received Data:", data);
 
-      const url = `http://192.168.0.110:8080/circle/getAll/${userId}`;
-
-      try {
-        const response = await fetch(url, {
-          method: 'GET',
-          headers: { 'Authorization': `Bearer ${accessToken}` },
-        });
-
-        if (!response.ok) throw new Error(`Network response was not ok: ${response.status}`);
-        const data = await response.json();
-        setCircles(data);
-      } catch (error) {
-        console.error("Error fetching circles data:", error);
-      }
-    };
+          setCircles(data);
+        } catch (error) {
+          console.error("Error fetching circles data:", error);
+        }
+      };
+      
 
     fetchCircles();
   }, [userId, accessToken]); // Fetch circles when userId or accessToken changes

@@ -5,6 +5,8 @@ import { Link } from 'expo-router';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import * as SecureStore from 'expo-secure-store';
+import * as Location from 'expo-location';
+import { PermissionsAndroid, Platform } from 'react-native';
 
 
 
@@ -20,19 +22,73 @@ export default function Home() {
   const [pushToken, setPushToken] = useState(null);
   const [originalPushToken, setOriginalPushToken] = useState(null);
   const [userId, setUserId] = useState(null);
+  const [accessToken, setAccessToken] = useState(null);
+  
+
+
+  useEffect(() => {
+    const fetchAuthData = async () => {
+      try {
+        const storedUserId = await SecureStore.getItemAsync("userId");
+        const storedAccessToken = await SecureStore.getItemAsync("accessToken");
+
+        if (storedUserId && storedAccessToken) {
+          setUserId(storedUserId);
+          setAccessToken(storedAccessToken);
+          
+        } else {
+          Alert.alert("Error", "Authentication details not found");
+        }
+      } catch (error) {
+        console.error("Error fetching authentication data:", error);
+      }
+    };
+
+    fetchAuthData();
+  }, []);
+  
+
+  
+  
+
+  
+  
+  
 
   
 
-  // userId
+  const requestLocationPermission = async () => {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    console.log('Location permission status:', status); // Toevoegen van een log
+    if (status !== 'granted') {
+      Alert.alert('Location permission denied', 'We need your location permission to send an SOS.');
+      return false; // Teruggeven van false als de permissie niet is verleend
+    }
+    return true;
+  };
+  
+
+  
+  
+  // userId && acces
   useEffect(() => {
-    const fetchUserId = async () => {
-      // get userId out SecureStore
-      const storedUserId = await SecureStore.getItemAsync('userId');
-      setUserId(storedUserId);  // Store the userId in the state
-      //console.log('User ID:', storedUserId);
+    const fetchAuthData = async () => {
+      try {
+        const storedUserId = await SecureStore.getItemAsync("userId");
+        const storedAccessToken = await SecureStore.getItemAsync("accessToken");
+
+        if (storedUserId && storedAccessToken) {
+          setUserId(storedUserId);
+          setAccessToken(storedAccessToken);
+        } else {
+          Alert.alert("Error", "Authentication details not found");
+        }
+      } catch (error) {
+        console.error("Error fetching authentication data:", error);
+      }
     };
 
-    fetchUserId();
+    fetchAuthData();
   }, []);
   
   //Push token
@@ -47,29 +103,35 @@ export default function Home() {
             Alert.alert('Push-notificatie-permissie geweigerd');
             return;
           }
+
         }
   
         const token = await Notifications.getExpoPushTokenAsync({
           projectId: Constants.expoConfig.extra.projectId,
         });
-        //console.log('Push Token:', token.data);
+        console.log('Push Token:', token.data);
   
         const extractedToken = token.data.replace('ExponentPushToken[', '').replace(']', '');
         setPushToken(extractedToken); 
         setOriginalPushToken(token.data); 
   
 
-        // Registreer token bij backend
+        
         const response = await fetch(`http://192.168.0.110:8080/user/${userId}/register-token`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ fcmToken: extractedToken }),
+          headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+          
+          body: JSON.stringify({ fcmToken: token.data }),
         });
   
         if (response.ok) {
           console.log('Push token registered');
         } else {
-          //console.error('Failed to register push token:', response.status);
+          console.log('Failed to register push token:', response.status);
+          console.error('Failed to register push token:', response.status);
         }
       } catch (err) {
         console.error('Error getting push token:', err.message);
@@ -78,6 +140,36 @@ export default function Home() {
   
     getPushToken();
   }, [userId]); // Toevoegen aan dependencies-array
+  
+  const getLocation = async () => {
+    try {
+      // Request location permission
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        alert("Permission to access location was denied. Please enable location services.");
+        return null;
+      }
+  
+      // Get current location
+      const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+  
+      // Check if location was retrieved properly
+      if (!location || !location.coords) {
+        console.log('Error: Location data is missing');
+        Alert.alert('Error', 'Could not retrieve location.');
+        return null;
+      }
+  
+      const { latitude, longitude } = location.coords;
+      console.log('Location:', latitude, longitude);
+  
+      return { latitude, longitude }; // Return the coordinates as an object
+    } catch (error) {
+      console.error('Error getting location:', error);
+      Alert.alert('Error', 'Could not retrieve location.');
+      return null;
+    }
+  };
   
   
   
@@ -109,6 +201,8 @@ export default function Home() {
 
     return () => clearInterval(locationInterval);
   }, [sosSent]);
+
+  
 
 
   // send notification
@@ -153,11 +247,77 @@ export default function Home() {
     }
   };
 
+  //sos
+  
+  const handleSendSOS = async () => {
+    console.log('handleSendSOS function called');
+    
+    // Retrieve description from selected checkboxes
+    const description = Object.keys(selectedCheckboxes)
+      .filter(key => selectedCheckboxes[key])  // Only include checked boxes
+      .join(', ');  // Join them as a comma-separated string
+
+    // If no description is selected, show an alert
+    if (!description) {
+      Alert.alert('Error', 'Selecteer een beschrijving voor de SOS!');
+      return;
+    }
+
+    // Request location permission
+    const hasPermission = await requestLocationPermission();
+    if (!hasPermission) return;
+
+    // Get current location
+    const location = await getLocation();
+    if (!location) {
+      Alert.alert('Error', 'Could not retrieve location.');
+      return;
+    }
+
+    console.log('Sending SOS alert...');
+
+    // Construct the SOS data object
+    const sosData = {
+      status: 'SOS',
+      description,
+      location: {
+        lat: location.latitude,
+        lon: location.longitude,
+      },
+      userId: userId,  // The user's ID
+    };
+
+    console.log('SOS Data to send:', JSON.stringify(sosData));
+
+    // Send the SOS data to the server
+    fetch('http://192.168.0.110:8080/alert/send', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(sosData),
+    })
+      .then(response => response.text())  // Gebruik .text() in plaats van .json()
+      .then(data => {
+        /* console.log('Raw response from server:', data); */
+        Alert.alert("Server response", data); 
+        sendPushNotification();
+        setSosSent(true);
+        setModalVisible(false);
+      })
+      .catch(error => {
+        console.error('Error sending SOS alert:', error);
+        Alert.alert('Error', 'Failed to send SOS alert.');
+      });
+    
+    }    
+
 
   // receive notification
   useEffect(() => {
     const setupNotifications = async () => {
-      // Configure notification channel for Android
+      // Configureer notificatiekanalen voor Android
       if (Platform.OS === 'android') {
         await Notifications.setNotificationChannelAsync('default', {
           name: 'default',
@@ -169,13 +329,22 @@ export default function Home() {
     };
   
     setupNotifications();
-  }, []);
+  
+    // Luister naar inkomende meldingen
+    const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
+      console.log('Notification tapped', response);
+      Alert.alert('You tapped the notification!');
+    });
+  
+    return () => responseListener.remove();
+  }, []); // Alleen één keer uitvoeren
+  
 
   useEffect(() => {
     
     Notifications.setNotificationHandler({
       handleNotification: async (notification) => {
-        console.log('Notification received in foreground', notification);
+        //console.log('Notification received in foreground', notification);
         return {
           shouldShowAlert: false, 
           shouldPlaySound: true,
@@ -233,14 +402,6 @@ export default function Home() {
   };
 
 
-  // handle SOS
-
-  const handleSendSOS = () => {
-    Alert.alert("SOS verzonden!");
-    setSosSent(true);
-    sendPushNotification();  // Send the push notification
-    setModalVisible(false);
-  };
 
   // Stop SOS
   const handleStopSOS = () => {
@@ -253,6 +414,7 @@ export default function Home() {
     Alert.alert(`Description: ${description}\nDuration: ${duration}`);
     setModalVisible(false);
   };
+  
 
   return (
     <ScrollView contentContainerStyle={styles.container}>

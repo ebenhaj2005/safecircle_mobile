@@ -30,9 +30,7 @@ export default function LoginPage() {
       const storedAccessToken = await SecureStore.getItemAsync('accessToken');
       const storedRefreshToken = await SecureStore.getItemAsync('refreshToken');
       
-  /*     console.log("Checking logged-in status...");
-      console.log("Stored Access Token: ", storedAccessToken);
-      console.log("Stored Refresh Token: ", storedRefreshToken); */
+  
 
       if (storedAccessToken && storedRefreshToken) {
         console.log("Tokens found. Attempting to refresh access token...");
@@ -93,9 +91,10 @@ export default function LoginPage() {
           // userId in SecureStore
           await SecureStore.setItemAsync('userId', userId);
   
-          /* console.log("Decoded Token: ", decodedToken);
+          
+          console.log("Decoded Token: ", decodedToken);
           console.log("User ID (subject): ", userId);
-          console.log("Subject: ", userId); */
+          console.log("Subject: ", userId); 
   
           router.push({ pathname: '/', params: { userId, subject: userId } });
         } else {
