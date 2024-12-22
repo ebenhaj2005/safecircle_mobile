@@ -69,7 +69,7 @@ export default function Home() {
         if (response.ok) {
           console.log('Push token registered');
         } else {
-          console.error('Failed to register push token:', response.status);
+          //console.error('Failed to register push token:', response.status);
         }
       } catch (err) {
         console.error('Error getting push token:', err.message);
