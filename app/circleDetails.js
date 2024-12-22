@@ -230,7 +230,7 @@ const UpdateCircle = () => {
             <Text style={styles.updateButtonText}>Update Circle Name</Text>
           </TouchableOpacity>
         </View>
-
+          <View style={styles.settingContainer}>
         <View style={styles.settingContainer}>
           <Text style={styles.settingLabel}>Search Users</Text>
           <TextInput
@@ -251,6 +251,7 @@ const UpdateCircle = () => {
           >
             <Text style={styles.updateButtonText}>Search</Text>
           </TouchableOpacity>
+          <View style={styles.container}>
 
           <FlatList
             data={searchResults}
@@ -272,26 +273,28 @@ const UpdateCircle = () => {
           >
             <Text style={styles.updateButtonText}>Add Users to Circle</Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.deleteButton}
-            onPress={() => {
-              Alert.alert(
-                "Delete Circle",
-                "Are you sure you want to delete this circle?",
-                [
-                  { text: "Cancel", style: "cancel" },
-                  {
-                    text: "Delete",
-                    style: "destructive",
-                    onPress: handleDeleteCircle
-                  }
-                ]
-              );
-            }}
-          >
-            <Text style={styles.deleteButtonText}>Delete Circle</Text>
-          </TouchableOpacity>
+
         </View>
+          <TouchableOpacity
+        style={styles.deleteButton}
+        onPress={() => {
+          Alert.alert(
+            'Delete Circle',
+            'Are you sure you want to delete this circle?',
+            [
+              { text: 'Cancel', style: 'cancel' },
+              { text: 'Delete', style: 'destructive', onPress: handleDeleteCircle }
+            ]
+          );
+        }}
+      >
+        <Text style={styles.deleteButtonText}>Delete Circle</Text>
+      </TouchableOpacity>
+      </View>
+
+       
+        </View>
+       
       </ScrollView>
 
       {/* Modal for user selection confirmation */}
@@ -332,7 +335,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f7f7f7",
-    marginTop: 40
+    marginTop: 40,
+    justifyContent: 'flex-end',
+    paddingHorizontal: 20,
+    paddingBottom: 20,
   },
   scrollContainer: {
     flexGrow: 1,
@@ -399,7 +405,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 10
+    marginBottom: 10,
   },
   updateButtonText: {
     fontSize: 18,
@@ -412,11 +418,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 20,
-    position: "absolute",
-    bottom: 20,
-    left: 20,
-    right: 20
+    marginBottom: 20,
   },
   deleteButtonText: {
     fontSize: 18,

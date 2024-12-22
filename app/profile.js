@@ -70,11 +70,11 @@ export default function Profile() {
               <Text style={styles.buttonText}>Personal Information</Text>
             </Link>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button}>
+           {/* <TouchableOpacity style={styles.button}>
             <Link href="/profileChildren" style={styles.link}>
               <Text style={styles.buttonText}>Children</Text>
-            </Link>
-          </TouchableOpacity>
+            </Link> 
+          </TouchableOpacity> */}
           <TouchableOpacity style={styles.button}>
             <Link href="/app/settings" style={styles.link}>
               <Text style={styles.buttonText}>App Settings</Text>
