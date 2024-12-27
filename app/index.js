@@ -117,7 +117,7 @@ export default function Home() {
   
 
         
-        const response = await fetch(`http://192.168.0.110:8080/user/${userId}/register-token`, {
+        const response = await fetch(`http://192.168.129.177:8080/user/${userId}/register-token`, {
           method: 'POST',
           headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -290,7 +290,7 @@ export default function Home() {
     console.log('SOS Data to send:', JSON.stringify(sosData));
 
     // Send the SOS data to the server
-    fetch('http://192.168.0.110:8080/alert/send', {
+    fetch('http://192.168.129.177:8080/alert/send', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

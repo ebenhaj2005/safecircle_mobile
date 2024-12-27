@@ -43,35 +43,32 @@ const Circle = () => {
 
   useEffect(() => {
     const fetchCircles = async () => {
-        if (!userId || !accessToken) {
-          //console.error("User ID or Access Token is missing");
-          return;
-        }
-      
-        const url = `http://192.168.0.110:8080/circle/getAll/${userId}`;
-      
-        try {
-          const response = await fetch(url, {
-            method: 'GET',
-            headers: { 'Authorization': `Bearer ${accessToken}` },
-          });
-      
-          // Controleer of de response een JSON is
-          const contentType = response.headers.get("Content-Type");
-      
-          if (!contentType || !contentType.includes("application/json")) {
-            throw new Error("Response is not in JSON format.");
-          }
-      
-          const data = await response.json();
-            console.log("Received Data:", data);
+      if (!userId || !accessToken) {
+        return;
+      }
 
-          setCircles(data);
-        } catch (error) {
-          console.error("Error fetching circles data:", error);
+      const url = `http://192.168.129.177:8080/circle/getAll/${userId}`;
+
+      try {
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: { 'Authorization': `Bearer ${accessToken}` },
+        });
+
+        const contentType = response.headers.get("Content-Type");
+
+        if (!contentType || !contentType.includes("application/json")) {
+          throw new Error("Response is not in JSON format.");
         }
-      };
-      
+
+        const data = await response.json();
+        console.log("Received Circles Data:", data);
+
+        setCircles(data);
+      } catch (error) {
+        console.error("Error fetching circles data:", error);
+      }
+    };
 
     const fetchInvitations = async () => {
       if (!userId || !accessToken) {
@@ -79,7 +76,7 @@ const Circle = () => {
         return;
       }
 
-      const url = `http://192.168.0.110:8080/invitation/showAll/${userId}`;
+      const url = `http://192.168.129.177:8080/invitation/showAll/${userId}`;
 
       try {
         const response = await fetch(url, {
@@ -108,7 +105,7 @@ const Circle = () => {
 
     try {
       const response = await fetch(
-        `http://192.168.0.110:8080/invitation/${invitationId}/${circleId}/${receiverId}/accept`,
+        `http://192.168.129.177:8080/invitation/${invitationId}/${circleId}/${receiverId}/accept`,
         {
           method: "PUT",
           headers: {
@@ -120,7 +117,6 @@ const Circle = () => {
       if (!response.ok) throw new Error("Failed to accept invitation");
       Alert.alert("Success", "Invitation accepted!");
 
-      // Fetch updated circles after accepting the invitation
       fetchCircles(); // Re-fetch circles to include the newly joined circle
       setInvitations((prev) =>
         prev.filter((inv) => inv.invitationId !== invitationId)
@@ -153,18 +149,26 @@ const Circle = () => {
     }
   };
 
-  const renderItem = ({ item }) => (
-    <View style={styles.circleContainer}>
-      <TouchableOpacity
-        onPress={() =>
-          navigation.navigate("circleDetails", { circleId: item.circleId })
-        }
-        style={styles.circle}
-      >
-        <Text style={styles.circleName}>{item.circleName}</Text>
-      </TouchableOpacity>
-    </View>
-  );
+  const renderItem = ({ item }) => {
+    const isRegularCircle = item.circleType === "REGULAR";  // Check if circle is "REGULAR"
+    
+    return (
+      <View style={styles.circleContainer}>
+        <TouchableOpacity
+          onPress={() => {
+            if (isRegularCircle) {
+              navigation.navigate("circleDetails", { circleId: item.circleId });
+            } else {
+              Alert.alert("Access Denied", "You cannot update this circle");
+            }
+          }}
+          style={styles.circle}
+        >
+          <Text style={styles.circleName}>{item.circleName}</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
 
   const renderInvitationItem = ({ item }) => (
     <View style={styles.invitationContainer}>
@@ -204,22 +208,41 @@ const Circle = () => {
     </View>
   );
 
+  const regularCircles = circles.filter(circle => circle.circleType === "REGULAR");
+  const eventCircles = circles.filter(circle => circle.circleType === "EVENT");
+
   return (
     <View style={styles.container}>
       {renderHeader()}
       <View style={styles.separator} />
-      {circles.length === 0 ? (
-        <Text style={styles.noCirclesText}>No circles available</Text>
-      ) : (
-        <FlatList
-          data={circles}
-          keyExtractor={(item) =>
-            item.id ? String(item.id) : Math.random().toString()
-          }
-          renderItem={renderItem}
-          numColumns={numColumns}
-          contentContainerStyle={styles.list}
-        />
+      
+      {/* Render Regular Circles */}
+      {regularCircles.length > 0 && (
+        <>
+          <Text style={styles.sectionTitle}>Regular Circles</Text>
+          <FlatList
+            data={regularCircles}
+            keyExtractor={(item) => item.circleId.toString()}
+            renderItem={renderItem}
+            numColumns={numColumns}
+            contentContainerStyle={styles.list}
+          />
+          <View style={styles.separator} />
+        </>
+      )}
+
+      {/* Render Event Circles */}
+      {eventCircles.length > 0 && (
+        <>
+          <Text style={styles.sectionTitle}>Event Circles</Text>
+          <FlatList
+            data={eventCircles}
+            keyExtractor={(item) => item.circleId.toString()}
+            renderItem={renderItem}
+            numColumns={numColumns}
+            contentContainerStyle={styles.list}
+          />
+        </>
       )}
 
       <Modal
@@ -320,6 +343,13 @@ const styles = StyleSheet.create({
   },
   list: {
     paddingHorizontal: 10
+  },
+  sectionTitle: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#CD9594",
+    marginBottom: 10,
+    textAlign: "center"
   },
   modalContainer: {
     flex: 1,

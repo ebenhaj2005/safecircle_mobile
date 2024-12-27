@@ -51,7 +51,7 @@ export default function LoginPage() {
   
     try {
 
-      const response = await fetch('http://192.168.0.110:8080/user/authenticate', { // IP-adres van je thuis wifi
+      const response = await fetch('http://192.168.129.177:8080/user/authenticate', { // IP-adres van je thuis wifi
 
 
         method: 'POST',
@@ -114,7 +114,7 @@ export default function LoginPage() {
   const refreshTokens = async (storedRefreshToken) => {
     try {
       console.log("Refreshing tokens...");
-      const response = await fetch('http://192.168.0.110:8080/user/refresh-token', {
+      const response = await fetch('http://192.168.129.177:8080/user/refresh-token', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

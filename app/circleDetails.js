@@ -20,6 +20,7 @@ const UpdateCircle = () => {
   const [circleType, setCircleType] = useState("REGULAR");
   const [available, setAvailable] = useState(true);
   const [accessToken, setAccessToken] = useState(null);
+  const [alertHistory, setAlertHistory] = useState([]); // State for storing alert history
   const navigation = useNavigation();
   const route = useRoute();
   const [firstName, setFirstName] = useState("");
@@ -61,7 +62,7 @@ const UpdateCircle = () => {
 
       try {
         const response = await fetch(
-          `http://192.168.0.110:8080/circle/${circleId}`,
+          `http://192.168.129.177:8080/circle/${circleId}`,
           {
             method: "GET",
             headers: { Authorization: `Bearer ${accessToken}` }
@@ -82,6 +83,39 @@ const UpdateCircle = () => {
     fetchCircleDetails();
   }, [circleId, accessToken]);
 
+  useEffect(() => {
+    if (!accessToken || !circleId) return;
+
+    const fetchAlertHistory = async () => {
+      try {
+        // Retrieve user ID from SecureStore
+        const storedUserId = await SecureStore.getItemAsync("userId");
+        if (!storedUserId) {
+          console.error("User ID is missing");
+          Alert.alert("Error", "User ID is missing");
+          return;
+        }
+
+        const response = await fetch(
+          `http://192.168.129.177:8080/alert/${storedUserId}/${circleId}/getAllCircleAlerts`,
+          {
+            method: "GET",
+            headers: { Authorization: `Bearer ${accessToken}` }
+          }
+        );
+
+        if (!response.ok) throw new Error("Failed to fetch alert history");
+        const data = await response.json();
+        setAlertHistory(data); // Store the alert history
+      } catch (error) {
+        console.error("Error fetching alert history:", error);
+        Alert.alert("Error", `Failed to fetch alert history: ${error.message}`);
+      }
+    };
+
+    fetchAlertHistory();
+  }, [accessToken, circleId]);
+
   const handleSearchUsers = async () => {
     if (!firstName.trim() && !lastName.trim()) {
       Alert.alert("Error", "Please enter at least a first name or last name.");
@@ -90,7 +124,7 @@ const UpdateCircle = () => {
 
     try {
       const response = await fetch(
-        `http://192.168.0.110:8080/user/search?firstName=${firstName}&lastName=${lastName}`,
+        `http://192.168.129.177:8080/user/search?firstName=${firstName}&lastName=${lastName}`,
         {
           method: "GET",
           headers: { Authorization: `Bearer ${accessToken}` }
@@ -128,7 +162,7 @@ const UpdateCircle = () => {
       const receiverId = selectedUser.userId; // Receiver is the selected user
 
       const response = await fetch(
-        `http://192.168.0.110:8080/invitation/create/${circleId}/from/${senderId}/to/${receiverId}`,
+        `http://192.168.129.177:8080/invitation/create/${circleId}/from/${senderId}/to/${receiverId}`,
         {
           method: "POST",
           headers: {
@@ -159,7 +193,7 @@ const UpdateCircle = () => {
   const handleUpdateCircleName = async () => {
     try {
       const response = await fetch(
-        `http://192.168.0.110:8080/circle/${circleId}/update`,
+        `http://192.168.129.177:8080/circle/${circleId}/update`,
         {
           method: "PUT",
           headers: {
@@ -186,7 +220,7 @@ const UpdateCircle = () => {
   const handleDeleteCircle = async () => {
     try {
       const response = await fetch(
-        `http://192.168.0.110:8080/circle/${circleId}/delete`,
+        `http://192.168.129.177:8080/circle/${circleId}/delete`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${accessToken}` }
@@ -208,6 +242,7 @@ const UpdateCircle = () => {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
+        {/* Existing components */}
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}
@@ -230,7 +265,7 @@ const UpdateCircle = () => {
             <Text style={styles.updateButtonText}>Update Circle Name</Text>
           </TouchableOpacity>
         </View>
-          <View style={styles.settingContainer}>
+        {/* Search Users */}
         <View style={styles.settingContainer}>
           <Text style={styles.settingLabel}>Search Users</Text>
           <TextInput
@@ -251,8 +286,6 @@ const UpdateCircle = () => {
           >
             <Text style={styles.updateButtonText}>Search</Text>
           </TouchableOpacity>
-          <View style={styles.container}>
-
           <FlatList
             data={searchResults}
             keyExtractor={(item) => item.email}
@@ -266,35 +299,40 @@ const UpdateCircle = () => {
               </TouchableOpacity>
             )}
           />
-
-          <TouchableOpacity
-            style={styles.updateButton}
-            onPress={handleAddUsersToCircle}
-          >
-            <Text style={styles.updateButtonText}>Add Users to Circle</Text>
-          </TouchableOpacity>
-
         </View>
-          <TouchableOpacity
-        style={styles.deleteButton}
-        onPress={() => {
-          Alert.alert(
-            'Delete Circle',
-            'Are you sure you want to delete this circle?',
-            [
-              { text: 'Cancel', style: 'cancel' },
-              { text: 'Delete', style: 'destructive', onPress: handleDeleteCircle }
-            ]
-          );
-        }}
-      >
-        <Text style={styles.deleteButtonText}>Delete Circle</Text>
-      </TouchableOpacity>
-      </View>
 
-       
+        {/* New Container for Alert History */}
+        <View style={styles.settingContainer}>
+          <Text style={styles.settingLabel}>Alert History</Text>
+          <FlatList
+            data={alertHistory}
+            keyExtractor={(item) => item.id ? item.id.toString() : Math.random().toString()}
+            renderItem={({ item }) => (
+              <View style={styles.alertItem}>
+                <Text>{item.description}</Text>
+                <Text>
+                  {item.timestamp ? new Date(item.timestamp).toLocaleString() : "Invalid Date"}
+                </Text>
+              </View>
+            )}
+          />
         </View>
-       
+
+        <TouchableOpacity
+          style={styles.deleteButton}
+          onPress={() => {
+            Alert.alert(
+              "Delete Circle",
+              "Are you sure you want to delete this circle?",
+              [
+                { text: "Cancel", style: "cancel" },
+                { text: "Delete", style: "destructive", onPress: handleDeleteCircle }
+              ]
+            );
+          }}
+        >
+          <Text style={styles.deleteButtonText}>Delete Circle</Text>
+        </TouchableOpacity>
       </ScrollView>
 
       {/* Modal for user selection confirmation */}
@@ -336,7 +374,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f7f7f7",
     marginTop: 40,
-    justifyContent: 'flex-end',
+    justifyContent: "flex-end",
     paddingHorizontal: 20,
     paddingBottom: 20,
   },
@@ -418,7 +456,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 70,
   },
   deleteButtonText: {
     fontSize: 18,
@@ -439,7 +477,8 @@ const styles = StyleSheet.create({
     alignItems: "center"
   },
   modalText: {
-    fontSize: 18,
+    fontSize: 16,
+    fontWeight: "600",
     marginBottom: 20
   },
   modalButtons: {
@@ -448,15 +487,32 @@ const styles = StyleSheet.create({
     width: "100%"
   },
   modalButton: {
+    padding: 10,
     backgroundColor: "#CD9594",
-    paddingVertical: 10,
-    borderRadius: 8,
-    width: "45%",
-    alignItems: "center"
+    borderRadius: 5,
+    flex: 1,
+    marginHorizontal: 10
   },
   modalButtonText: {
     fontSize: 16,
-    color: "#fff"
+    color: "#fff",
+    fontWeight: "600",
+    textAlign: "center"
+  },
+  alertItem: {
+    padding: 10,
+    backgroundColor: "#f0f0f0",
+    borderRadius: 8,
+    marginBottom: 10
+  },
+  alertSender: {
+    fontWeight: "bold",
+    marginBottom: 5
+  },
+  alertTimestamp: {
+    color: "#ff4d4f",
+    fontSize: 12,
+    marginBottom: 5
   }
 });
 

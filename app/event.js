@@ -5,20 +5,21 @@ import {
   TextInput,
   FlatList,
   TouchableOpacity,
-  StyleSheet
+  StyleSheet,
+  Alert,
 } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { Link } from "expo-router";
-import * as SecureStore from "expo-secure-store"; // Voor toegang tot opgeslagen tokens
+import * as SecureStore from "expo-secure-store";
 
 export default function EventsPage() {
-  const [events, setEvents] = useState([]);
+  const [circles, setCircles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [accessToken, setAccessToken] = useState(null);
 
-  // Haal het accessToken op uit SecureStore
+  // Fetch the access token from SecureStore
   useEffect(() => {
     const fetchAccessToken = async () => {
       try {
@@ -36,47 +37,97 @@ export default function EventsPage() {
     fetchAccessToken();
   }, []);
 
-  // Haal events op zodra het token beschikbaar is
-  useEffect(() => {
-    const fetchEvents = async () => {
-      if (!accessToken) return; // Wacht op het accessToken
+  const fetchCircles = async () => {
+    if (!accessToken) return;
 
-      try {
-        const response = await fetch(
-          "http://192.168.0.110:8080/circle/event/all",
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch events: ${response.status}`);
+    try {
+      const response = await fetch(
+        "http://192.168.129.177:8080/circle/event/all",
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
         }
+      );
 
-        const data = await response.json();
-        setEvents(data); // Zorg dat de server een array van events terugstuurt
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
+      if (!response.ok) {
+        const text = await response.text(); // Get the response as text
+        throw new Error(`Failed to fetch circles: ${text}`);
       }
-    };
 
-    fetchEvents();
+      const data = await response.json();
+      setCircles(data); // Set circles fetched from backend
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch circles when access token is available
+  useEffect(() => {
+    fetchCircles();
   }, [accessToken]);
 
-  const filteredEvents = events.filter((event) =>
-    event.name.toLowerCase().includes(searchQuery.toLowerCase())
+  // Filter circles based on the search query
+  const filteredCircles = circles.filter((circle) =>
+    circle.circleName && circle.circleName.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleJoinCircle = async (circleId) => {
+    Alert.alert(
+      "Join Circle",
+      "Are you sure you want to join this event circle?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Yes",
+          onPress: async () => {
+            try {
+              // Fetch userId from SecureStore or any other source
+              const userId = await SecureStore.getItemAsync("userId");
+              if (!userId) {
+                throw new Error("User ID not found.");
+              }
+
+              // Step 1: Send a request to add the user to the event (circle)
+              const addUserToEventResponse = await fetch(
+                `http://192.168.129.177:8080/event/${circleId}/add/${userId}`,
+                {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                    "Content-Type": "application/json",
+                  },
+                }
+              );
+
+              if (!addUserToEventResponse.ok) {
+                const text = await addUserToEventResponse.text();
+                throw new Error(`Failed to join event: ${text}`);
+              }
+
+              Alert.alert("Success", "You have successfully joined the event circle!");
+              // Optionally re-fetch circles to update the UI
+              fetchCircles();
+            } catch (err) {
+              Alert.alert("Error", `Failed to join circle: ${err.message}`);
+            }
+          },
+        },
+      ]
+    );
+  };
 
   if (loading) {
     return (
       <View style={styles.container}>
-        <Text style={styles.loadingText}>Loading events...</Text>
+        <Text style={styles.loadingText}>Loading circles...</Text>
       </View>
     );
   }
@@ -92,7 +143,7 @@ export default function EventsPage() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Events</Text>
+        <Text style={styles.title}>Event Circles</Text>
         <TouchableOpacity style={styles.addButton}>
           <Link href="/eventrequestpage" style={styles.link}>
             <Icon name="add-circle-outline" size={29} color="#d68787" />
@@ -109,7 +160,7 @@ export default function EventsPage() {
         />
         <TextInput
           style={styles.searchInput}
-          placeholder="Search events"
+          placeholder="Search circles"
           placeholderTextColor="#a29da0"
           value={searchQuery}
           onChangeText={setSearchQuery}
@@ -117,15 +168,18 @@ export default function EventsPage() {
       </View>
 
       <FlatList
-        data={filteredEvents}
-        keyExtractor={(item) => String(item.id)}
+        data={filteredCircles}
+        keyExtractor={(item) => String(item.circleId)}
         renderItem={({ item }) => (
           <View style={styles.eventCard}>
             <View>
-              <Text style={styles.eventName}>{item.name}</Text>
-              <Text style={styles.eventDate}>{item.date}</Text>
+              <Text style={styles.eventName}>{item.circleName}</Text>
+              <Text style={styles.eventDate}>Type: {item.circleType}</Text>
             </View>
-            <TouchableOpacity style={styles.joinButton}>
+            <TouchableOpacity
+              style={styles.joinButton}
+              onPress={() => handleJoinCircle(item.circleId)}
+            >
               <Text style={styles.joinButtonText}>Join</Text>
             </TouchableOpacity>
           </View>
@@ -139,26 +193,25 @@ export default function EventsPage() {
   );
 }
 
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    padding: 16
+    padding: 16,
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 16,
-    marginTop: 30
+    marginTop: 30,
   },
   title: {
     fontSize: 24,
-    fontWeight: "bold"
+    fontWeight: "bold",
   },
   addButton: {
-    padding: 8
+    padding: 8,
   },
   searchContainer: {
     flexDirection: "row",
@@ -167,14 +220,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    marginBottom: 16
+    marginBottom: 16,
   },
   searchIcon: {
-    marginRight: 8
+    marginRight: 8,
   },
   searchInput: {
     flex: 1,
-    fontSize: 16
+    fontSize: 16,
   },
   eventCard: {
     flexDirection: "row",
@@ -185,36 +238,36 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: "#ececec"
+    borderColor: "#ececec",
   },
   eventName: {
     fontSize: 18,
-    fontWeight: "500"
+    fontWeight: "500",
   },
   eventDate: {
     fontSize: 14,
-    color: "#a0a0a0"
+    color: "#a0a0a0",
   },
   joinButton: {
     backgroundColor: "#d68787",
     paddingVertical: 6,
     paddingHorizontal: 16,
-    borderRadius: 20
+    borderRadius: 20,
   },
   joinButtonText: {
     color: "#fff",
-    fontWeight: "bold"
+    fontWeight: "bold",
   },
   scanButton: {
     backgroundColor: "#d68787",
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: "center",
-    marginTop: 16
+    marginTop: 16,
   },
   scanButtonText: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "bold"
-  }
+    fontWeight: "bold",
+  },
 });
