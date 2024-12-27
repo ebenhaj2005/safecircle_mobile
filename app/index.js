@@ -8,7 +8,7 @@ import * as SecureStore from 'expo-secure-store';
 import * as Location from 'expo-location';
 import { PermissionsAndroid, Platform } from 'react-native';
 
-
+import LocationUpdater from "./location";
 
 export default function Home() {
   const [modalVisible, setModalVisible] = useState(false);
@@ -117,7 +117,7 @@ export default function Home() {
   
 
         
-        const response = await fetch(`http://192.168.129.177:8080/user/${userId}/register-token`, {
+        const response = await fetch(`http://192.168.1.61:8080/user/${userId}/register-token`, {
           method: 'POST',
           headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -290,7 +290,7 @@ export default function Home() {
     console.log('SOS Data to send:', JSON.stringify(sosData));
 
     // Send the SOS data to the server
-    fetch('http://192.168.129.177:8080/alert/send', {
+    fetch('http://192.168.1.61:8080/alert/send', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -441,6 +441,8 @@ export default function Home() {
      
 
       <View style={styles.separator} />
+      <LocationUpdater userId={userId} />
+
       <Text style={styles.subText}>Feeling Unsafe</Text>
       <View style={styles.checklist}>
         {["Circle 1", "Circle 2", "Circle 3", "Circle 4", "Circle 5", "Tomorrowland", "Graspop"].map((item, index) => (
@@ -536,6 +538,7 @@ export default function Home() {
               </>
             )}
           </View>
+      
         </View>
       </Modal>
     </ScrollView>

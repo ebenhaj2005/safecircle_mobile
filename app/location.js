@@ -46,6 +46,7 @@ const LocationUpdater = () => {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
+              'Authorization': `Bearer ${accessToken}`,
             },
             body: JSON.stringify({
               latitude: location.coords.latitude,
@@ -55,7 +56,8 @@ const LocationUpdater = () => {
 
           if (!response.ok) {
             console.error("Fout bij het versturen van de locatie:", response.statusText);
-          }
+          }else{
+            console.log(`Locatie verstuurd naar backend: ${location}`);}
         } catch (error) {
           console.error("Fout bij het ophalen of versturen van de locatie:", error);
         }

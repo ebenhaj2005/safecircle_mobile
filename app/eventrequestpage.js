@@ -96,7 +96,7 @@ export default function EventRequestPage() {
   
    
   
-    const requestUrl = 'http://192.168.0.110:8080/event/request';
+    const requestUrl = 'http://192.168.1.61:8080/event/request';
   
 console.log("eheheh")
 

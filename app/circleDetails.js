@@ -62,7 +62,7 @@ const UpdateCircle = () => {
 
       try {
         const response = await fetch(
-          `http://192.168.129.177:8080/circle/${circleId}`,
+          `http://192.168.1.61:8080/circle/${circleId}`,
           {
             method: "GET",
             headers: { Authorization: `Bearer ${accessToken}` }
@@ -97,7 +97,7 @@ const UpdateCircle = () => {
         }
 
         const response = await fetch(
-          `http://192.168.129.177:8080/alert/${storedUserId}/${circleId}/getAllCircleAlerts`,
+          `http://192.168.1.61:8080/alert/${storedUserId}/${circleId}/getAllCircleAlerts`,
           {
             method: "GET",
             headers: { Authorization: `Bearer ${accessToken}` }
@@ -124,7 +124,7 @@ const UpdateCircle = () => {
 
     try {
       const response = await fetch(
-        `http://192.168.129.177:8080/user/search?firstName=${firstName}&lastName=${lastName}`,
+        `http://192.168.1.61:8080/user/search?firstName=${firstName}&lastName=${lastName}`,
         {
           method: "GET",
           headers: { Authorization: `Bearer ${accessToken}` }
@@ -162,7 +162,7 @@ const UpdateCircle = () => {
       const receiverId = selectedUser.userId; // Receiver is the selected user
 
       const response = await fetch(
-        `http://192.168.129.177:8080/invitation/create/${circleId}/from/${senderId}/to/${receiverId}`,
+        `http://192.168.1.61:8080/invitation/create/${circleId}/from/${senderId}/to/${receiverId}`,
         {
           method: "POST",
           headers: {
@@ -193,7 +193,7 @@ const UpdateCircle = () => {
   const handleUpdateCircleName = async () => {
     try {
       const response = await fetch(
-        `http://192.168.129.177:8080/circle/${circleId}/update`,
+        `http://192.168.1.61:8080/circle/${circleId}/update`,
         {
           method: "PUT",
           headers: {
@@ -220,7 +220,7 @@ const UpdateCircle = () => {
   const handleDeleteCircle = async () => {
     try {
       const response = await fetch(
-        `http://192.168.129.177:8080/circle/${circleId}/delete`,
+        `http://192.168.1.61:8080/circle/${circleId}/delete`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${accessToken}` }
