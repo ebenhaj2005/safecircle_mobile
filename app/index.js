@@ -414,7 +414,8 @@ export default function Home() {
     Alert.alert(`Description: ${description}\nDuration: ${duration}`);
     setModalVisible(false);
   };
-  
+  console.log("userId: ", userId);
+
 
   return (
     <ScrollView contentContainerStyle={styles.container}>

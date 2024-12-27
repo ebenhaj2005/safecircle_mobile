@@ -39,10 +39,12 @@ const LocationUpdater = () => {
       intervalId = setInterval(async () => {
         try {
           const location = await Location.getCurrentPositionAsync({});
+       const lati = location.coords.latitude;
+       const longi = location.coords.longitude;
           console.log("Locatie opgehaald:", location);
 
           // Stuur locatie naar backend
-          const response = await fetch(`http://192.168.1.61:8080/location/${userId}`, {
+          const response = await fetch(`http://192.168.1.61:8080/location/${userId}?latitude=${lati}&longitude=${longi}`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

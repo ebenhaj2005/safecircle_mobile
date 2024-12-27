@@ -109,7 +109,6 @@ export default function LoginPage() {
       Alert.alert("Error", "An error occurred during login");
     }
   };
-  
 
   const refreshTokens = async (storedRefreshToken) => {
     try {
