@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, Button } from "react-native";
 import * as Location from "expo-location";
+import * as SecureStore from "expo-secure-store";
 
 const LocationUpdater = () => {
+  const [accessToken, setAccessToken] = useState(null);  // Move this inside the component
   const [errorMsg, setErrorMsg] = useState(null);
   const [userId, setUserId] = useState(null);
+
   useEffect(() => {
     const fetchAuthData = async () => {
       try {
@@ -23,28 +26,29 @@ const LocationUpdater = () => {
     };
 
     fetchAuthData();
-  }, []);
+  }, []);  // Empty dependency array to run only once when the component mounts
+
   useEffect(() => {
     let intervalId;
 
     const startUpdatingLocation = async () => {
-      // Vraag toestemming om locatie te gebruiken
+      // Request permission to access location
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
         setErrorMsg("Toestemming voor locatie is geweigerd.");
         return;
       }
 
-      // Haal locatie elke 3 minuten op en stuur naar backend
+      // Fetch location every 3 minutes and send to the backend
       intervalId = setInterval(async () => {
         try {
           const location = await Location.getCurrentPositionAsync({});
-       const lati = location.coords.latitude;
-       const longi = location.coords.longitude;
+          const lati = location.coords.latitude;
+          const longi = location.coords.longitude;
           console.log("Locatie opgehaald:", location);
 
-          // Stuur locatie naar backend
-          const response = await fetch(`http://192.168.1.61:8080/location/${userId}?latitude=${lati}&longitude=${longi}`, {
+          // Send location to the backend
+          const response = await fetch(`http://192.168.0.114:8080/location/${userId}?latitude=${lati}&longitude=${longi}`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -58,21 +62,16 @@ const LocationUpdater = () => {
 
           if (!response.ok) {
             console.error("Fout bij het versturen van de locatie:", response.statusText);
-          }else{
-            console.log(`Locatie verstuurd naar backend: ${location}`);}
+          } else {
+            console.log(`Locatie verstuurd naar backend: ${location}`);
+          }
         } catch (error) {
           console.error("Fout bij het ophalen of versturen van de locatie:", error);
         }
-      }, 10000); // 3 minuten in milliseconden
+      }, 180000); // 3 minutes in milliseconds
     };
 
     startUpdatingLocation();
+  })};
 
-    // Opruimen van interval wanneer component wordt ontladen
-    return () => clearInterval(intervalId);
-  }, []);
-
- 
-};
-
-export default LocationUpdater;
+export default LocationUpdater

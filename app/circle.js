@@ -47,7 +47,7 @@ const Circle = () => {
         return;
       }
 
-      const url = `http://192.168.1.61:8080/circle/getAll/${userId}`;
+      const url = `http://192.168.0.114:8080/circle/getAll/${userId}`;
 
       try {
         const response = await fetch(url, {
@@ -72,11 +72,11 @@ const Circle = () => {
 
     const fetchInvitations = async () => {
       if (!userId || !accessToken) {
-        console.error("User  ID or Access Token is missing");
+        //console.error("User  ID or Access Token is missing");
         return;
       }
 
-      const url = `http://192.168.1.61:8080/invitation/showAll/${userId}`;
+      const url = `http://192.168.0.114:8080/invitation/showAll/${userId}`;
 
       try {
         const response = await fetch(url, {
@@ -89,7 +89,7 @@ const Circle = () => {
         const data = await response.json();
         setInvitations(data);
       } catch (error) {
-        console.error("Error fetching invitations data:", error);
+        //console.error("Error fetching invitations data:", error);
       }
     };
 
@@ -105,7 +105,7 @@ const Circle = () => {
 
     try {
       const response = await fetch(
-        `http://192.168.1.61:8080/invitation/${invitationId}/${circleId}/${receiverId}/accept`,
+        `http://192.168.0.114:8080/invitation/${invitationId}/${circleId}/${receiverId}/accept`,
         {
           method: "PUT",
           headers: {
@@ -128,7 +128,7 @@ const Circle = () => {
   };
 
   const handleDeclineInvitation = async (invitationId) => {
-    const url = `http://192.168.1.61:8080/invitation/${invitationId}/decline`;
+    const url = `http://192.168.0.114:8080/invitation/${invitationId}/decline`;
     try {
       const response = await fetch(url, {
         method: "PUT",

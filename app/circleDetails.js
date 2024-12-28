@@ -75,8 +75,8 @@ const UpdateCircle = () => {
         setCircleType(data.circleType);
         setAvailable(data.available);
       } catch (error) {
-        console.error("Error fetching circle details:", error);
-        Alert.alert("Error", `Failed to load circle details: ${error.message}`);
+        console.error('Error updating circle:', error);
+      Alert.alert("Error", "Failed to update circle: " + error.message);
       }
     };
 

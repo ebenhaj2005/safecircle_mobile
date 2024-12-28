@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Button, Modal, Alert, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Button, Modal, Alert, TextInput, FlatList } from 'react-native';
 import localImage from '../assets/images/geenBackground.png';
 import { Link } from 'expo-router';
 import * as Notifications from 'expo-notifications';
@@ -23,6 +23,9 @@ export default function Home() {
   const [originalPushToken, setOriginalPushToken] = useState(null);
   const [userId, setUserId] = useState(null);
   const [accessToken, setAccessToken] = useState(null);
+  const [circles, setCircles] = useState([]);
+ 
+  
   
 
 
@@ -49,11 +52,58 @@ export default function Home() {
   
 
   
+  useEffect(() => {
+    const fetchCircles = async () => {
+      if (!userId || !accessToken) return;
+  
+      try {
+        const response = await fetch(`http://192.168.0.114:8080/circle/getAll/${userId}`, {
+          method: "GET",
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+  
+        const data = await response.json();
+
+        console.log("Circles:", data);
+  
+        // Check for undefined id and clean data
+        const cleanedData = data.map((item) => ({
+          ...item,
+          id: item.id || Math.random().toString(), // Ensure every item has a valid id
+        }));
+  
+        setCircles(cleanedData);
+      } catch (error) {
+        console.error("Error fetching circles:", error);
+      }
+    };
+  
+    fetchCircles();
+  }, [userId, accessToken]);
   
 
+  const renderChecklistItem = ({ item }) => (
+    <TouchableOpacity
+      key={item.circleId}  // Zorg ervoor dat je `circleId` gebruikt als de key
+      style={styles.checklistItem}
+      onPress={() => toggleCheckbox(item.circleId)}
+    >
+      <View
+        style={[
+          styles.checkbox,
+          selectedCheckboxes[item.circleId] && styles.checkboxSelected,
+        ]}
+      >
+        {selectedCheckboxes[item.circleId] && (
+          <Text style={styles.checkboxMark}>✔</Text>
+        )}
+      </View>
+      <Text style={styles.checklistText}>{item.circleName}</Text>  {/* Dit toont de naam van de cirkel */}
+    </TouchableOpacity>
+  );
   
   
-  
+ 
 
   
 
@@ -117,7 +167,7 @@ export default function Home() {
   
 
         
-        const response = await fetch(`http://192.168.1.61:8080/user/${userId}/register-token`, {
+        const response = await fetch(`http://192.168.0.114:8080/user/${userId}/register-token`, {
           method: 'POST',
           headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -228,6 +278,8 @@ export default function Home() {
         //_displayInForeground: true, more like an alert
       };
 
+      
+
       const response = await fetch('https://exp.host/--/api/v2/push/send', {
         method: 'POST',
         headers: {
@@ -281,8 +333,8 @@ export default function Home() {
       status: 'SOS',
       description,
       location: {
-        lat: location.latitude,
-        lon: location.longitude,
+        latitude: location.latitude,
+        longitude: location.longitude,
       },
       userId: userId,  // The user's ID
     };
@@ -290,7 +342,7 @@ export default function Home() {
     console.log('SOS Data to send:', JSON.stringify(sosData));
 
     // Send the SOS data to the server
-    fetch('http://192.168.1.61:8080/alert/send', {
+    fetch('http://192.168.0.114:8080/alert/send', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -380,12 +432,13 @@ export default function Home() {
   
   
   //checkbox
-  const toggleCheckbox = (key) => {
+  const toggleCheckbox = (id) => {
     setSelectedCheckboxes((prev) => ({
       ...prev,
-      [key]: !prev[key], // Toggle between true and false
+      [id]: !prev[id], // Toggle tussen true en false
     }));
   };
+  
 
 
   //handle emergency 
@@ -399,7 +452,14 @@ export default function Home() {
   const handleSendPress = () => {
     setModalContent('send');
     setModalVisible(true);
+    const selectedItems = Object.keys(selectedCheckboxes).filter(
+      (key) => selectedCheckboxes[key]
+    );
+    console.log("Selected Items:", selectedItems);
+    // Hier kun je de geselecteerde items doorsturen naar een server
   };
+    
+  
 
 
 
@@ -418,7 +478,8 @@ export default function Home() {
 
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    
+    <View style={styles.container}>
       {sosSent ? (
         <>
           <Text style={styles.timerText}>Timer: {timer}s</Text>
@@ -441,27 +502,31 @@ export default function Home() {
       )}
      
 
-      <View style={styles.separator} />
-      <LocationUpdater userId={userId} />
+      
+     <View style={styles.container}>
+        <View style={styles.separator} />
+        <LocationUpdater userId={userId} />
+        <Text style={styles.subText}>Feeling Unsafe</Text>
 
-      <Text style={styles.subText}>Feeling Unsafe</Text>
-      <View style={styles.checklist}>
-        {["Circle 1", "Circle 2", "Circle 3", "Circle 4", "Circle 5", "Tomorrowland", "Graspop"].map((item, index) => (
-          <TouchableOpacity
-            key={index}
-            style={styles.checklistItem}
-            onPress={() => toggleCheckbox(item)}
-          >
-            <View style={[styles.checkbox, selectedCheckboxes[item] && styles.checkboxSelected]}>
-              {selectedCheckboxes[item] && <Text style={styles.checkboxMark}>✔</Text>}
-            </View>
-            <Text style={styles.checklistText}>{item}</Text>
+        <FlatList
+          data={circles}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderChecklistItem}
+          contentContainerStyle={styles.checklist}
+        />
+        
+      
+
+      
+    
+        <View style={{ flex: 1, justifyContent: 'flex-end', marginBottom: 20 }}>
+          <TouchableOpacity style={styles.sendButton} onPress={() => { handleSendPress(); }}>
+            <Text style={styles.sendButtonText}>Send</Text>
           </TouchableOpacity>
-        ))}
-      </View>
-      <TouchableOpacity style={styles.sendButton} onPress={handleSendPress}>
-        <Text style={styles.sendButtonText}>Send</Text>
-      </TouchableOpacity>
+        </View>
+    </View>
+
+      
 
       <Modal
         animationType="slide"
@@ -542,7 +607,8 @@ export default function Home() {
       
         </View>
       </Modal>
-    </ScrollView>
+    </View>
+   
   );
 }
 

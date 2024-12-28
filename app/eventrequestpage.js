@@ -98,7 +98,6 @@ export default function EventRequestPage() {
   
     const requestUrl = 'http://192.168.1.61:8080/event/request';
   
-console.log("eheheh")
 
     // Request body opstellen
     const requestBody = {
@@ -136,7 +135,9 @@ console.log("eheheh")
         /* console.log("Server response:", response);
         const result = await response.json();
         console.log("Server response:", result); // Log de server response voor debugging */
-        Alert.alert("Error", result.message || "Failed to submit event request");
+        const errorData = await response.json(); // Parse the response JSON
+        Alert.alert("Error", errorData.message || "Failed to submit event request");
+
       }
     } catch (error) {
       console.error("Error submitting event request:", error);
