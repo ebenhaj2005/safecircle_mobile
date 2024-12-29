@@ -12,8 +12,6 @@ export default function Home() {
   const [userId, setUserId] = useState(null);
   const [alerts, setAlerts] = useState([]); // State to hold alerts
 
-
-
   useEffect(() => {
     const fetchAuthData = async () => {
       try {
@@ -33,23 +31,16 @@ export default function Home() {
 
     fetchAuthData();
   }, []);
-  
-  
-
-
 
   const mapRef = useRef(null);
 
-
   const getLocation = async () => {
-   
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== "granted") {
       alert("Permission to access location was denied");
       return;
     }
 
- 
     await Location.watchPositionAsync(
       {
         accuracy: Location.Accuracy.High,
@@ -63,32 +54,34 @@ export default function Home() {
   };
 
   useEffect(() => {
- 
     getLocation();
   }, []);
 
-   
   const fetchAlerts = async () => {
     try {
-      const response = await fetch("http://192.168.1.61:8080/alert/latest",
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-   
-    response
+      const response = await fetch("http://192.168.1.61:8080/alert/latest/sos", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+  
+      if (response.ok) {
+        const data = await response.json();
+        setAlerts(data); // Save the alerts array to state
+      } 
     } catch (error) {
       console.error("Error fetching alerts:", error);
     }
   };
-
+ 
   useEffect(() => {
     fetchAlerts(); // Fetch alerts when the component mounts
-  }, []);
+
+    const interval = setInterval(fetchAlerts, 10000); // Fetch every 5 minutes
+    return () => clearInterval(interval); // Clear interval on component unmount
+  }, [accessToken]);
 
   const moveToUserLocation = () => {
     if (mapRef.current && location) {
@@ -104,29 +97,15 @@ export default function Home() {
     }
   };
 
-
-  const handleMarkerPress = () => {
+  const handleAlertMarkerPress = (latitude, longitude) => {
     Alert.alert(
-      "Go to Location?",
+      "Navigate?",
       "Do you want to open this location in Google Maps?",
       [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Go",
-          onPress: () => openInGoogleMaps(),
-        },
+        { text: "Cancel", style: "cancel" },
+        { text: "Go", onPress: () => Linking.openURL(`https://www.google.com/maps?q=${latitude},${longitude}`) },
       ]
     );
-  };
-
-  const openInGoogleMaps = () => {
-    if (location) {
-      const url = `https://www.google.com/maps?q=${location.latitude},${location.longitude}`;
-      Linking.openURL(url); 
-    }
   };
 
   if (!location) {
@@ -150,15 +129,29 @@ export default function Home() {
           longitudeDelta: 0.0020,
         }}
       >
-      
-        <Marker
+        <Marker style={styles.marker}
           coordinate={{
             latitude: location.latitude,
             longitude: location.longitude,
           }}
           title="Your Location"
-          onPress={handleMarkerPress} 
+          pinColor="blue"
+          onPress={() => handleAlertMarkerPress(location.latitude, location.longitude)}
         />
+
+        {alerts.map((alert, index) => (
+          <Marker
+            key={index}
+            coordinate={{
+              latitude: alert.location.latitude,
+              longitude: alert.location.longitude,
+            }}
+            title={`${alert.firstName} has sent an sos`}
+            description={alert.description}
+            pinColor={alert.status === "UNSAFE" ? "yellow" : "red"} // Differentiate markers by status
+            onPress={() => handleAlertMarkerPress(alert.location.latitude, alert.location.longitude)}
+          />
+        ))}
       </MapView>
 
       <Button
@@ -166,21 +159,7 @@ export default function Home() {
         color="#CD9594"
         onPress={moveToUserLocation}
       />
-
-{alerts.map((alert, index) => (
-          <Marker
-            key={index}
-            coordinate={{
-              latitude: alert.latitude, // Assuming alert has latitude
-              longitude: alert.longitude, // Assuming alert has longitude
-            }}
-            title={alert.title} // Assuming alert has a title
-            description={alert.description} // Assuming alert has a description
-            onPress={() => handleMarkerPress(alert)} // Handle press
-          />
-        ))}
     </View>
-
   );
 }
 
@@ -205,4 +184,5 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginBottom: 30,
   },
+ 
 });

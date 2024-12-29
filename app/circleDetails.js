@@ -303,16 +303,28 @@ const UpdateCircle = () => {
 
         {/* New Container for Alert History */}
         <View style={styles.settingContainer}>
-          <Text style={styles.settingLabel}>Alert History</Text>
-          <FlatList
-            data={alertHistory}
-            keyExtractor={(item) => item.id ? item.id.toString() : Math.random().toString()}
-            renderItem={({ item }) => (
-              <View style={styles.alertItem}>
-                <Text>{item.description}</Text>
-                <Text>
-                  {item.timestamp ? new Date(item.timestamp).toLocaleString() : "Invalid Date"}
-                </Text>
+  <Text style={styles.settingLabel}>Alert History</Text>
+  <FlatList
+    data={alertHistory}
+    keyExtractor={(item) => item.id ? item.id.toString() : Math.random().toString()}
+    renderItem={({ item }) => (
+      <View style={styles.alertItem}>
+        <Text>{item.description}</Text>
+        <Text>
+          {item.timestamp ? new Date(item.timestamp).toLocaleString() : "Invalid Date"}
+        </Text>
+        {/* Add a button that navigates to the Map screen with the location */}
+        <TouchableOpacity
+          style={styles.locationButton}
+          onPress={() =>
+            navigation.navigate("map", {
+              latitude: item.latitude,  // Pass latitude to the map screen
+              longitude: item.longitude, // Pass longitude to the map screen
+            })
+          }
+        >
+          <Text style={styles.locationButtonText}>Show Location</Text>
+        </TouchableOpacity>
               </View>
             )}
           />
@@ -513,7 +525,20 @@ const styles = StyleSheet.create({
     color: "#ff4d4f",
     fontSize: 12,
     marginBottom: 5
-  }
+  },
+  locationButton: {
+    marginTop: 10,
+    backgroundColor: "#4caf50",
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  locationButtonText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
+  },
 });
 
 export default UpdateCircle;
