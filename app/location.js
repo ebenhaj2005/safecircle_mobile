@@ -4,7 +4,7 @@ import * as Location from "expo-location";
 import * as SecureStore from "expo-secure-store";
 
 const LocationUpdater = () => {
-  const [accessToken, setAccessToken] = useState(null);  // Move this inside the component
+  const [accessToken, setAccessToken] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
   const [userId, setUserId] = useState(null);
 
@@ -26,8 +26,7 @@ const LocationUpdater = () => {
     };
 
     fetchAuthData();
-  }, []);  // Empty dependency array to run only once when the component mounts
-
+  }, []);
   useEffect(() => {
     let intervalId;
 
@@ -48,30 +47,40 @@ const LocationUpdater = () => {
           console.log("Locatie opgehaald:", location);
 
           // Send location to the backend
-          const response = await fetch(`http://192.168.0.114:8080/location/${userId}?latitude=${lati}&longitude=${longi}`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              'Authorization': `Bearer ${accessToken}`,
-            },
-            body: JSON.stringify({
-              latitude: location.coords.latitude,
-              longitude: location.coords.longitude,
-            }),
-          });
+          const response = await fetch(
+            `http://192.168.1.61:8080/user/location/${userId}?latitude=${lati}&longitude=${longi}`,
+            {
+              method: 'PUT',
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`,
+              },
+              body: JSON.stringify({
+                latitude: location.coords.latitude,
+                longitude: location.coords.longitude,
+              }),
+            }
+          );
 
           if (!response.ok) {
-            console.error("Fout bij het versturen van de locatie:", response.statusText);
+            console.error(
+              "Fout bij het versturen van de locatie:",
+              response.statusText
+            );
           } else {
-            console.log(`Locatie verstuurd naar backend: ${location}`);
+            console.log(`Locatie verstuurd naar backend: latitude=${lati}, longitude=${longi}`);
           }
         } catch (error) {
-          console.error("Fout bij het ophalen of versturen van de locatie:", error);
+          console.error(
+            "Fout bij het ophalen of versturen van de locatie:",
+            error
+          );
         }
       }, 180000); // 3 minutes in milliseconds
     };
 
     startUpdatingLocation();
-  })};
+  });
+};
 
-export default LocationUpdater
+export default LocationUpdater;

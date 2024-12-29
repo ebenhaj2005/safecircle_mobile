@@ -3,11 +3,40 @@ import { View, Text, StyleSheet, Button, Alert } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import * as Location from "expo-location"; 
 import { Linking } from "react-native";
+import * as SecureStore from 'expo-secure-store'; // Make sure to import SecureStore
 
 export default function Home() {
-
   const [location, setLocation] = useState(null);
+  const [accessToken, setAccessToken] = useState(null);
+  const [errorMsg, setErrorMsg] = useState(null);
+  const [userId, setUserId] = useState(null);
+  const [alerts, setAlerts] = useState([]); // State to hold alerts
+
+
+
+  useEffect(() => {
+    const fetchAuthData = async () => {
+      try {
+        const storedUserId = await SecureStore.getItemAsync("userId");
+        const storedAccessToken = await SecureStore.getItemAsync("accessToken");
+
+        if (storedUserId && storedAccessToken) {
+          setUserId(storedUserId);
+          setAccessToken(storedAccessToken);
+        } else {
+          Alert.alert("Error", "Authentication details not found");
+        }
+      } catch (error) {
+        console.error("Error fetching authentication data:", error);
+      }
+    };
+
+    fetchAuthData();
+  }, []);
   
+  
+
+
 
   const mapRef = useRef(null);
 
@@ -38,6 +67,28 @@ export default function Home() {
     getLocation();
   }, []);
 
+   
+  const fetchAlerts = async () => {
+    try {
+      const response = await fetch("http://192.168.1.61:8080/alert/latest",
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+   
+    response
+    } catch (error) {
+      console.error("Error fetching alerts:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchAlerts(); // Fetch alerts when the component mounts
+  }, []);
 
   const moveToUserLocation = () => {
     if (mapRef.current && location) {
@@ -115,7 +166,21 @@ export default function Home() {
         color="#CD9594"
         onPress={moveToUserLocation}
       />
+
+{alerts.map((alert, index) => (
+          <Marker
+            key={index}
+            coordinate={{
+              latitude: alert.latitude, // Assuming alert has latitude
+              longitude: alert.longitude, // Assuming alert has longitude
+            }}
+            title={alert.title} // Assuming alert has a title
+            description={alert.description} // Assuming alert has a description
+            onPress={() => handleMarkerPress(alert)} // Handle press
+          />
+        ))}
     </View>
+
   );
 }
 

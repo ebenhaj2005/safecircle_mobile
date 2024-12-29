@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Button, Modal, Alert, TextInput, FlatList } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image,Button, Modal, Alert, TextInput, FlatList } from 'react-native';
 import localImage from '../assets/images/geenBackground.png';
-import { Link } from 'expo-router';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import * as SecureStore from 'expo-secure-store';
 import * as Location from 'expo-location';
 import { PermissionsAndroid, Platform } from 'react-native';
 
-import LocationUpdater from "./location";
 
 export default function Home() {
   const [modalVisible, setModalVisible] = useState(false);
@@ -24,6 +22,9 @@ export default function Home() {
   const [userId, setUserId] = useState(null);
   const [accessToken, setAccessToken] = useState(null);
   const [circles, setCircles] = useState([]);
+  const [errorMsg, setErrorMsg] = useState(null);
+  const [sosMode, setSosMode] = useState(false); 
+  const [locationInterval, setLocationInterval] = useState(180000);
  
   
   
@@ -51,13 +52,71 @@ export default function Home() {
   }, []);
   
 
+
+  
+  useEffect(() => {
+    let intervalId;
+
+    const startUpdatingLocation = async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        setErrorMsg("Toestemming voor locatie is geweigerd.");
+        return;
+      }
+
+      if (intervalId) clearInterval(intervalId);
+
+      intervalId = setInterval(async () => {
+        try {
+          const location = await Location.getCurrentPositionAsync({});
+          let lati = location.coords.latitude;
+          let longi = location.coords.longitude;
+          console.log("Locatie opgehaald:", location);
+       
+
+          const response = await fetch(
+            `http://192.168.1.61:8080/user/location/${userId}?latitude=${lati}&longitude=${longi}`,
+         
+            {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`,
+              },
+              body: JSON.stringify({
+                latitude: lati,
+                longitude: longi,
+              }),
+            }
+          );
+
+          if (!response.ok) {
+            console.error("Fout bij het versturen van de locatie:", response.statusText);
+          } else {
+            console.log(`Locatie verstuurd naar backend: ${location}`);
+          }
+        } catch (error) {
+          console.error("Fout bij het ophalen of versturen van de locatie:", error);
+        }
+      }, locationInterval);
+    };
+
+    startUpdatingLocation();
+
+    return () => clearInterval(intervalId);
+  }, [locationInterval, userId, accessToken]);
+
+  const toggleSosMode = () => {
+    setSosMode((prev) => !prev);
+    setLocationInterval((prev) => (prev === 10000 ? 1000 : 10000)); // Toggle between 3 minutes and 30 seconds
+  };
   
   useEffect(() => {
     const fetchCircles = async () => {
       if (!userId || !accessToken) return;
   
       try {
-        const response = await fetch(`http://192.168.0.114:8080/circle/getAll/${userId}`, {
+        const response = await fetch(`http://192.168.1.61:8080/circle/getAll/${userId}`, {
           method: "GET",
           headers: { Authorization: `Bearer ${accessToken}` },
         });
@@ -167,7 +226,7 @@ export default function Home() {
   
 
         
-        const response = await fetch(`http://192.168.0.114:8080/user/${userId}/register-token`, {
+        const response = await fetch(`http://192.168.1.61:8080/user/${userId}/register-token`, {
           method: 'POST',
           headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -342,7 +401,7 @@ export default function Home() {
     console.log('SOS Data to send:', JSON.stringify(sosData));
 
     // Send the SOS data to the server
-    fetch('http://192.168.0.114:8080/alert/send', {
+    fetch('http://192.168.1.61:8080/alert/send', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -474,7 +533,7 @@ export default function Home() {
     Alert.alert(`Description: ${description}\nDuration: ${duration}`);
     setModalVisible(false);
   };
-  console.log("userId: ", userId);
+
 
 
   return (
@@ -490,7 +549,7 @@ export default function Home() {
       ) : (
         <>
           <Text style={styles.text}>Push for Emergency</Text>
-          <TouchableOpacity style={styles.button} onPress={handleEmergencyPress}>
+          <TouchableOpacity style={styles.button} onPress={() => { handleEmergencyPress(); toggleSosMode(); }}>
             <Image
               source={localImage}
               style={styles.buttonImage}
@@ -505,7 +564,7 @@ export default function Home() {
       
      <View style={styles.container}>
         <View style={styles.separator} />
-        <LocationUpdater userId={userId} />
+      
         <Text style={styles.subText}>Feeling Unsafe</Text>
 
         <FlatList
