@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image,Button, Modal, Alert, TextInput, FlatList } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image,Button, Modal, Alert, TextInput, FlatList, ScrollView } from 'react-native';
 import localImage from '../assets/images/geenBackground.png';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
@@ -75,7 +75,7 @@ export default function Home() {
        
 
           const response = await fetch(
-            `http://192.168.1.61:8080/user/location/${userId}?latitude=${lati}&longitude=${longi}`,
+            `http://192.168.0.114:8080/user/location/${userId}?latitude=${lati}&longitude=${longi}`,
          
             {
               method: "PUT",
@@ -116,7 +116,7 @@ export default function Home() {
       if (!userId || !accessToken) return;
   
       try {
-        const response = await fetch(`http://192.168.1.61:8080/circle/getAll/${userId}`, {
+        const response = await fetch(`http://192.168.0.114:8080/circle/getAll/${userId}`, {
           method: "GET",
           headers: { Authorization: `Bearer ${accessToken}` },
         });
@@ -140,28 +140,9 @@ export default function Home() {
     fetchCircles();
   }, [userId, accessToken]);
   
+  
 
-  const renderChecklistItem = ({ item }) => (
-    <TouchableOpacity
-      key={item.circleId}  // Zorg ervoor dat je `circleId` gebruikt als de key
-      style={styles.checklistItem}
-      onPress={() => toggleCheckbox(item.circleId)}
-    >
-      <View
-        style={[
-          styles.checkbox,
-          selectedCheckboxes[item.circleId] && styles.checkboxSelected,
-        ]}
-      >
-        {selectedCheckboxes[item.circleId] && (
-          <Text style={styles.checkboxMark}>✔</Text>
-        )}
-      </View>
-      <Text style={styles.checklistText}>{item.circleName}</Text>  {/* Dit toont de naam van de cirkel */}
-    </TouchableOpacity>
-  );
-  
-  
+
  
 
   
@@ -226,7 +207,7 @@ export default function Home() {
   
 
         
-        const response = await fetch(`http://192.168.1.61:8080/user/${userId}/register-token`, {
+        const response = await fetch(`http://192.168.0.114:8080/user/${userId}/register-token`, {
           method: 'POST',
           headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -395,13 +376,13 @@ export default function Home() {
         latitude: location.latitude,
         longitude: location.longitude,
       },
-      userId: userId,  // The user's ID
+      //userId: userId,  // The user's ID
     };
 
     console.log('SOS Data to send:', JSON.stringify(sosData));
 
     // Send the SOS data to the server
-    fetch('http://192.168.1.61:8080/alert/send', {
+    fetch(`http://192.168.0.114:8080/alert/${userId}/send`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -424,6 +405,35 @@ export default function Home() {
     
     }    
 
+
+    //SOS stop
+
+    const handleStopSOS = async () => {
+      // Reset the SOS state
+      setSosSent(false);
+      setTimer(0);
+    
+      try {
+        const response = await fetch(`http://192.168.0.114:8080/alert/${userId}/stop`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`,
+          },
+        });
+    
+        if (response.ok) {
+          console.log('SOS stopped successfully.');
+        } else {
+          console.error('Failed to stop SOS:', response.status);
+          Alert.alert('Error', 'Failed to stop SOS alert.');
+        }
+      } catch (error) {
+        console.error('Error stopping SOS:', error);
+        Alert.alert('Error', 'An unexpected error occurred while stopping SOS.');
+      }
+    };
+    
 
   // receive notification
   useEffect(() => {
@@ -491,13 +501,12 @@ export default function Home() {
   
   
   //checkbox
-  const toggleCheckbox = (id) => {
+  const toggleCheckbox = (circleId) => {
     setSelectedCheckboxes((prev) => ({
       ...prev,
-      [id]: !prev[id], // Toggle tussen true en false
+      [circleId]: !prev[circleId], // Toggle de checkbox voor de geselecteerde circleId
     }));
   };
-  
 
 
   //handle emergency 
@@ -507,32 +516,79 @@ export default function Home() {
   };
 
   //handle send press
-
   const handleSendPress = () => {
     setModalContent('send');
     setModalVisible(true);
-    const selectedItems = Object.keys(selectedCheckboxes).filter(
-      (key) => selectedCheckboxes[key]
+  
+    // Haal de geselecteerde circleIds op uit selectedCheckboxes
+    const selectedCircleIds = Object.keys(selectedCheckboxes).filter(
+      (key) => selectedCheckboxes[key] // Alleen de geselecteerde checkboxes
     );
-    console.log("Selected Items:", selectedItems);
-    // Hier kun je de geselecteerde items doorsturen naar een server
+  
+    console.log("Selected CircleIds:", selectedCircleIds); // Log de geselecteerde circleIds
+  
+    // Hier kun je de selectedCircleIds doorsturen naar een server of een andere functie
   };
+  
+  
     
   
 
 
 
-  // Stop SOS
-  const handleStopSOS = () => {
-    setSosSent(false);
-    setTimer(0);
-  };
-
+ 
   //send feeling
-  const handleSendFeeling = () => {
-    Alert.alert(`Description: ${description}\nDuration: ${duration}`);
-    setModalVisible(false);
+  const handleSendFeeling = async () => {
+    try {
+      // Controleer of een beschrijving is ingevuld
+      if (!description) {
+        Alert.alert('Error', 'Please provide a description.');
+        return;
+      }
+  
+      // Haal locatiegegevens op
+      const location = await getLocation();
+      if (!location) {
+        Alert.alert('Error', 'Could not retrieve location.');
+        return;
+      }
+  
+      // UNSAFE data object
+      const unsafeData = {
+        status: 'UNSAFE',
+        description,
+        location: {
+          latitude: location.latitude,
+          longitude: location.longitude,
+        },
+        //userId: userId, // Zorg dat userId beschikbaar is
+      };
+  
+      console.log('UNSAFE Data to send:', JSON.stringify(unsafeData));
+  
+      // Verstuur naar de backend
+      const response = await fetch(`http://192.168.0.114:8080/alert/${userId}/send`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(unsafeData),
+      });
+  
+      if (response.ok) {
+        Alert.alert('Success', 'Your unsafe alert has been sent.');
+      } else {
+        const errorText = await response.text();
+        console.error('Error sending UNSAFE alert:', errorText);
+        Alert.alert('Error', 'Failed to send UNSAFE alert.');
+      }
+    } catch (error) {
+      console.error('Error sending UNSAFE alert:', error);
+      Alert.alert('Error', 'An unexpected error occurred.');
+    }
   };
+  
 
 
 
@@ -567,23 +623,38 @@ export default function Home() {
       
         <Text style={styles.subText}>Feeling Unsafe</Text>
 
-        <FlatList
-          data={circles}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={renderChecklistItem}
-          contentContainerStyle={styles.checklist}
-        />
-        
-      
+        <View style={styles.checklist}>
+                      {circles.map((item) => (
+                        <TouchableOpacity
+                          key={item.circleId}
+                          style={styles.checklistItem}
+                          onPress={() => toggleCheckbox(item.circleId)}
+                        >
+                          <View
+                            style={[
+                              styles.checkbox,
+                              selectedCheckboxes[item.circleId] && styles.checkboxSelected,
+                            ]}
+                          >
+                            {selectedCheckboxes[item.circleId] && (
+                              <Text style={styles.checkboxMark}>✔</Text>
+                            )}
+                          </View>
+                          <Text style={styles.checklistText}>{item.circleName}</Text>
+                        </TouchableOpacity>
+                      ))}
+        </View>
 
-      
+
+        
+    </View>
+
     
-        <View style={{ flex: 1, justifyContent: 'flex-end', marginBottom: 20 }}>
+    <View style={{ flex: 1, justifyContent: 'flex-end', marginBottom: 100, }}>
           <TouchableOpacity style={styles.sendButton} onPress={() => { handleSendPress(); }}>
             <Text style={styles.sendButtonText}>Send</Text>
           </TouchableOpacity>
         </View>
-    </View>
 
       
 
@@ -673,10 +744,10 @@ export default function Home() {
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
+    flex: 1,
     justifyContent: "flex-start",
     alignItems: "center",
-    marginTop: 20,
+    marginTop: 70,
 
   },
   text: {
@@ -749,12 +820,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   sendButton: {
-    marginTop: 20,
+    marginTop: 10,
     paddingVertical: 10,
     paddingHorizontal: 20,
     backgroundColor: "#CD9594",
     borderRadius: 5,
-marginBottom: 20,
+    marginBottom: 20,
+  /*   borderWidth: 2,
+    borderColor: "blue", */
+    //position: 'absolute',
   },
   sendButtonText: {
     color: "white",

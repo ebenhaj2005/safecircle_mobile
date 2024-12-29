@@ -47,7 +47,7 @@ const Circle = () => {
         return;
       }
 
-      const url = `http://192.168.1.61:8080/circle/getAll/${userId}`;
+      const url = `http://192.168.0.114:8080/circle/getAll/${userId}`;
 
       try {
         const response = await fetch(url, {
