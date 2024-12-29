@@ -297,7 +297,7 @@ export default function Home() {
 
   // send notification
 
-  const sendPushNotification = async () => {
+/*   const sendPushNotification = async () => {
     if (!pushToken) {
       console.error('No push token available.');
       return;
@@ -338,7 +338,7 @@ export default function Home() {
       console.error('Failed to send notification:', error);
     }
   };
-
+ */
   //sos
   
   const handleSendSOS = async () => {
@@ -394,7 +394,7 @@ export default function Home() {
       .then(data => {
         /* console.log('Raw response from server:', data); */
         Alert.alert("Server response", data); 
-        sendPushNotification();
+        //sendPushNotification();
         setSosSent(true);
         setModalVisible(false);
       })
@@ -435,9 +435,9 @@ export default function Home() {
     };
     
 
-  // receive notification
+  /* // receive notification
   useEffect(() => {
-    const setupNotifications = async () => {
+/*     const setupNotifications = async () => {
       // Configureer notificatiekanalen voor Android
       if (Platform.OS === 'android') {
         await Notifications.setNotificationChannelAsync('default', {
@@ -456,7 +456,7 @@ export default function Home() {
       console.log('Notification tapped', response);
       Alert.alert('You tapped the notification!');
     });
-  
+   
     return () => responseListener.remove();
   }, []); // Alleen één keer uitvoeren
   
@@ -496,7 +496,7 @@ export default function Home() {
   }, []);
 
 
-  
+   */
   
   
   
