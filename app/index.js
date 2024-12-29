@@ -545,15 +545,34 @@ export default function Home() {
         Alert.alert('Error', 'Please provide a description.');
         return;
       }
-  
-      // Haal locatiegegevens op
-      const location = await getLocation();
-      if (!location) {
-        Alert.alert('Error', 'Could not retrieve location.');
+      setModalVisible(false);
+
+      // Haal de geselecteerde circleIds op
+      const selectedCircleIds = Object.keys(selectedCheckboxes).filter(
+        (key) => selectedCheckboxes[key] // Alleen geselecteerde checkboxes
+      );
+
+      if (selectedCircleIds.length === 0) {
+        Alert.alert('Error', 'Please select at least one circle.');
         return;
       }
-  
-      // UNSAFE data object
+
+      // Zet de duur in het juiste formaat (bijv. PT30M voor 30 minuten)
+      let formattedDuration = 'PT30M'; // Standaard duur is 30 minuten
+      if (duration === '30min') {
+        formattedDuration = 'PT30M';
+      } else if (duration === '1 hour') {
+        formattedDuration = 'PT1H';
+      } else if (duration === '2 hours') {
+        formattedDuration = 'PT2H';
+      } else if (duration === '8 hours') {
+        formattedDuration = 'PT8H';
+      }
+
+      // Haal locatiegegevens op (je moet de `getLocation` functie implementeren)
+      const location = { latitude: 50.96099997216114, longitude: 4.372219992158251 }; // Voorbeeldlocatie
+
+      // Maak het "unsafe" data object
       const unsafeData = {
         status: 'UNSAFE',
         description,
@@ -561,11 +580,12 @@ export default function Home() {
           latitude: location.latitude,
           longitude: location.longitude,
         },
-        //userId: userId, // Zorg dat userId beschikbaar is
+        duration: formattedDuration, // De geselecteerde duur
+        circles: selectedCircleIds.map((id) => parseInt(id)), // De geselecteerde circleIds
       };
-  
+
       console.log('UNSAFE Data to send:', JSON.stringify(unsafeData));
-  
+
       // Verstuur naar de backend
       const response = await fetch(`http://192.168.0.114:8080/alert/${userId}/send`, {
         method: 'POST',
@@ -575,7 +595,7 @@ export default function Home() {
         },
         body: JSON.stringify(unsafeData),
       });
-  
+
       if (response.ok) {
         Alert.alert('Success', 'Your unsafe alert has been sent.');
       } else {
