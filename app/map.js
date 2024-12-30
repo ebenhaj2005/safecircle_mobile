@@ -59,7 +59,7 @@ export default function Home() {
 
   const fetchAlerts = async () => {
     try {
-      const response = await fetch("http://192.168.1.61:8080/alert/latest/sos", {
+      const response = await fetch("http://192.168.129.177:8080/alert/latest/sos", {
         method: "GET",
         headers: {
           Authorization: `Bearer ${accessToken}`,

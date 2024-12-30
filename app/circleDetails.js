@@ -20,7 +20,6 @@ const UpdateCircle = () => {
   const [circleType, setCircleType] = useState("REGULAR");
   const [available, setAvailable] = useState(true);
   const [accessToken, setAccessToken] = useState(null);
-  const [alertHistory, setAlertHistory] = useState([]); // State for storing alert history
   const navigation = useNavigation();
   const route = useRoute();
   const [firstName, setFirstName] = useState("");
@@ -62,7 +61,7 @@ const UpdateCircle = () => {
 
       try {
         const response = await fetch(
-          `http://192.168.1.61:8080/circle/${circleId}`,
+          `http://192.168.129.177:8080/circle/${circleId}`,
           {
             method: "GET",
             headers: { Authorization: `Bearer ${accessToken}` }
@@ -75,46 +74,13 @@ const UpdateCircle = () => {
         setCircleType(data.circleType);
         setAvailable(data.available);
       } catch (error) {
-        console.error('Error updating circle:', error);
-      Alert.alert("Error", "Failed to update circle: " + error.message);
+        console.error("Error fetching circle details:", error);
+        Alert.alert("Error", `Failed to load circle details: ${error.message}`);
       }
     };
 
     fetchCircleDetails();
   }, [circleId, accessToken]);
-
-  useEffect(() => {
-    if (!accessToken || !circleId) return;
-
-    const fetchAlertHistory = async () => {
-      try {
-        // Retrieve user ID from SecureStore
-        const storedUserId = await SecureStore.getItemAsync("userId");
-        if (!storedUserId) {
-          console.error("User ID is missing");
-          Alert.alert("Error", "User ID is missing");
-          return;
-        }
-
-        const response = await fetch(
-          `http://192.168.1.61:8080/alert/${storedUserId}/${circleId}/getAllCircleAlerts`,
-          {
-            method: "GET",
-            headers: { Authorization: `Bearer ${accessToken}` }
-          }
-        );
-
-        if (!response.ok) throw new Error("Failed to fetch alert history");
-        const data = await response.json();
-        setAlertHistory(data); // Store the alert history
-      } catch (error) {
-        console.error("Error fetching alert history:", error);
-        Alert.alert("Error", `Failed to fetch alert history: ${error.message}`);
-      }
-    };
-
-    fetchAlertHistory();
-  }, [accessToken, circleId]);
 
   const handleSearchUsers = async () => {
     if (!firstName.trim() && !lastName.trim()) {
@@ -124,7 +90,7 @@ const UpdateCircle = () => {
 
     try {
       const response = await fetch(
-        `http://192.168.1.61:8080/user/search?firstName=${firstName}&lastName=${lastName}`,
+        `http://192.168.129.177:8080/user/search?firstName=${firstName}&lastName=${lastName}`,
         {
           method: "GET",
           headers: { Authorization: `Bearer ${accessToken}` }
@@ -162,7 +128,7 @@ const UpdateCircle = () => {
       const receiverId = selectedUser.userId; // Receiver is the selected user
 
       const response = await fetch(
-        `http://192.168.1.61:8080/invitation/create/${circleId}/from/${senderId}/to/${receiverId}`,
+        `http://192.168.129.177:8080/invitation/create/${circleId}/from/${senderId}/to/${receiverId}`,
         {
           method: "POST",
           headers: {
@@ -193,7 +159,7 @@ const UpdateCircle = () => {
   const handleUpdateCircleName = async () => {
     try {
       const response = await fetch(
-        `http://192.168.1.61:8080/circle/${circleId}/update`,
+        `http://192.168.129.177:8080/circle/${circleId}/update`,
         {
           method: "PUT",
           headers: {
@@ -220,7 +186,7 @@ const UpdateCircle = () => {
   const handleDeleteCircle = async () => {
     try {
       const response = await fetch(
-        `http://192.168.1.61:8080/circle/${circleId}/delete`,
+        `http://192.168.129.177:8080/circle/${circleId}/delete`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${accessToken}` }
@@ -242,7 +208,6 @@ const UpdateCircle = () => {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {/* Existing components */}
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}
@@ -265,7 +230,6 @@ const UpdateCircle = () => {
             <Text style={styles.updateButtonText}>Update Circle Name</Text>
           </TouchableOpacity>
         </View>
-        {/* Search Users */}
         <View style={styles.settingContainer}>
           <Text style={styles.settingLabel}>Search Users</Text>
           <TextInput
@@ -301,34 +265,13 @@ const UpdateCircle = () => {
           />
         </View>
 
-        {/* New Container for Alert History */}
-        <View style={styles.settingContainer}>
-  <Text style={styles.settingLabel}>Alert History</Text>
-  <FlatList
-    data={alertHistory}
-    keyExtractor={(item) => item.id ? item.id.toString() : Math.random().toString()}
-    renderItem={({ item }) => (
-      <View style={styles.alertItem}>
-        <Text>{item.description}</Text>
-        <Text>
-          {item.timestamp ? new Date(item.timestamp).toLocaleString() : "Invalid Date"}
-        </Text>
-        {/* Add a button that navigates to the Map screen with the location */}
+        {/* Button to navigate to Circle History */}
         <TouchableOpacity
-          style={styles.locationButton}
-          onPress={() =>
-            navigation.navigate("map", {
-              latitude: item.latitude,  // Pass latitude to the map screen
-              longitude: item.longitude, // Pass longitude to the map screen
-            })
-          }
+          style={styles.historyButton}
+          onPress={() => navigation.navigate("circleHistory", { circleId })}
         >
-          <Text style={styles.locationButtonText}>Show Location</Text>
+          <Text style={styles.historyButtonText}>View Circle History</Text>
         </TouchableOpacity>
-              </View>
-            )}
-          />
-        </View>
 
         <TouchableOpacity
           style={styles.deleteButton}
@@ -402,12 +345,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     backgroundColor: "#CD9594",
     borderRadius: 10
-  },
-  resultItem: {
-    padding: 10,
-    backgroundColor: "#f0f0f0",
-    borderRadius: 8,
-    marginBottom: 10
   },
   backButtonText: {
     fontSize: 16,
@@ -511,34 +448,25 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     textAlign: "center"
   },
-  alertItem: {
+  resultItem: {
     padding: 10,
     backgroundColor: "#f0f0f0",
     borderRadius: 8,
     marginBottom: 10
   },
-  alertSender: {
-    fontWeight: "bold",
-    marginBottom: 5
-  },
-  alertTimestamp: {
-    color: "#ff4d4f",
-    fontSize: 12,
-    marginBottom: 5
-  },
-  locationButton: {
-    marginTop: 10,
-    backgroundColor: "#4caf50",
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderRadius: 8,
+  historyButton: {
+    backgroundColor: "#4CAF50",
+    paddingVertical: 15,
+    borderRadius: 10,
+    justifyContent: "center",
     alignItems: "center",
+    marginBottom: 20,
   },
-  locationButtonText: {
+  historyButtonText: {
+    fontSize: 18,
     color: "#fff",
-    fontSize: 14,
-    fontWeight: "600",
-  },
+    fontWeight: "600"
+  }
 });
 
 export default UpdateCircle;

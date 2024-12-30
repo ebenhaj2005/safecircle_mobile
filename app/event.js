@@ -42,7 +42,7 @@ export default function EventsPage() {
 
     try {
       const response = await fetch(
-        "http://192.168.1.61:8080/circle/event/all",
+        "http://192.168.129.177:8080/circle/event/all",
         {
           method: "GET",
           headers: {
@@ -97,7 +97,7 @@ export default function EventsPage() {
 
               // Step 1: Send a request to add the user to the event (circle)
               const addUserToEventResponse = await fetch(
-                `http://192.168.1.61:8080/event/${circleId}/add/${userId}`,
+                `http://192.168.129.177:8080/event/${circleId}/add/${userId}`,
                 {
                   method: "POST",
                   headers: {

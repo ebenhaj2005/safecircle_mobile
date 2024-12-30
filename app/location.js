@@ -48,7 +48,7 @@ const LocationUpdater = () => {
 
           // Send location to the backend
           const response = await fetch(
-            `http://192.168.1.61:8080/user/location/${userId}?latitude=${lati}&longitude=${longi}`,
+            `http://192.168.129.177:8080/user/location/${userId}?latitude=${lati}&longitude=${longi}`,
             {
               method: 'PUT',
               headers: {
