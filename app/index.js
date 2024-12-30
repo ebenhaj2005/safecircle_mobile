@@ -5,6 +5,7 @@ import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import * as SecureStore from 'expo-secure-store';
 import * as Location from 'expo-location';
+import { useNavigation } from "@react-navigation/native";
 import { PermissionsAndroid, Platform } from 'react-native';
 
 
@@ -25,6 +26,7 @@ export default function Home() {
   const [errorMsg, setErrorMsg] = useState(null);
   const [sosMode, setSosMode] = useState(false); 
   const [locationInterval, setLocationInterval] = useState(180000);
+  const navigation = useNavigation();
  
   
   
@@ -75,7 +77,7 @@ export default function Home() {
        
 
           const response = await fetch(
-            `http://192.168.1.61:8080/user/location/${userId}?latitude=${lati}&longitude=${longi}`,
+            `http://192.168.0.114:8080/user/location/${userId}?latitude=${lati}&longitude=${longi}`,
          
             {
               method: "PUT",
@@ -116,7 +118,7 @@ export default function Home() {
       if (!userId || !accessToken) return;
   
       try {
-        const response = await fetch(`http://192.168.1.61:8080/circle/getAll/${userId}`, {
+        const response = await fetch(`http://192.168.0.114:8080/circle/getAll/${userId}`, {
           method: "GET",
           headers: { Authorization: `Bearer ${accessToken}` },
         });
@@ -207,7 +209,7 @@ export default function Home() {
   
 
         
-        const response = await fetch(`http://192.168.1.61:8080/user/${userId}/register-token`, {
+        const response = await fetch(`http://192.168.0.114:8080/user/${userId}/register-token`, {
           method: 'POST',
           headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -382,7 +384,7 @@ export default function Home() {
     console.log('SOS Data to send:', JSON.stringify(sosData));
 
     // Send the SOS data to the server
-    fetch(`http://192.168.1.61:8080/alert/${userId}/send`, {
+    fetch(`http://192.168.0.114:8080/alert/${userId}/send`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -414,7 +416,7 @@ export default function Home() {
       setTimer(0);
     
       try {
-        const response = await fetch(`http://192.168.1.61:8080/alert/${userId}/stop`, {
+        const response = await fetch(`http://192.168.0.114:8080/alert/${userId}/stop`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -482,21 +484,21 @@ export default function Home() {
   
     return () => responseListener.remove();
   }, []);
-
+ */
+  
 
   useEffect(() => {
     const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
       console.log('Notification tapped', response);
-  
-      // Wanneer de gebruiker op de notificatie klikt, kun je bepaalde acties uitvoeren.
-      Alert.alert('You tapped the notification!');
+
+      // Wanneer de gebruiker op de notificatie klikt, navigeer naar de map-pagina
+      navigation.navigate('map');
     });
-  
+
     return () => responseListener.remove();
-  }, []);
+  }, [navigation]); // Voeg `navigation` toe aan de dependencies-array
 
 
-   */
   
   
   
@@ -587,7 +589,7 @@ export default function Home() {
       console.log('UNSAFE Data to send:', JSON.stringify(unsafeData));
 
       // Verstuur naar de backend
-      const response = await fetch(`http://192.168.1.61:8080/alert/${userId}/send`, {
+      const response = await fetch(`http://192.168.0.114:8080/alert/${userId}/send`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
