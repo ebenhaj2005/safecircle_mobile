@@ -47,7 +47,7 @@ const Circle = () => {
         return;
       }
 
-      const url = `http://192.168.129.177:8080/circle/getAll/${userId}`;
+      const url = `http://192.168.1.61:8080/circle/getAll/${userId}`;
 
       try {
         const response = await fetch(url, {
@@ -76,7 +76,7 @@ const Circle = () => {
         return;
       }
 
-      const url = `http://192.168.129.177:8080/invitation/showAll/${userId}`;
+      const url = `http://192.168.1.61:8080/invitation/showAll/${userId}`;
 
       try {
         const response = await fetch(url, {
@@ -105,7 +105,7 @@ const Circle = () => {
 
     try {
       const response = await fetch(
-        `http://192.168.129.177:8080/invitation/${invitationId}/${circleId}/${receiverId}/accept`,
+        `http://192.168.1.61:8080/invitation/${invitationId}/${circleId}/${receiverId}/accept`,
         {
           method: "PUT",
           headers: {
@@ -128,7 +128,7 @@ const Circle = () => {
   };
 
   const handleDeclineInvitation = async (invitationId) => {
-    const url = `http://192.168.129.177:8080/invitation/${invitationId}/decline`;
+    const url = `http://192.168.1.61:8080/invitation/${invitationId}/decline`;
     try {
       const response = await fetch(url, {
         method: "PUT",

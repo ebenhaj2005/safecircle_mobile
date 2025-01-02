@@ -8,10 +8,42 @@ import * as SecureStore from 'expo-secure-store'; // Make sure to import SecureS
 export default function Home() {
   const [location, setLocation] = useState(null);
   const [accessToken, setAccessToken] = useState(null);
-  const [errorMsg, setErrorMsg] = useState(null);
   const [userId, setUserId] = useState(null);
   const [alerts, setAlerts] = useState([]); // State to hold alerts
+  const [circles, setCircles] = useState([]); // State to hold circles
 
+  useEffect(() => {
+    const fetchCircles = async () => {
+      if (!userId || !accessToken) {
+        return;
+      }
+
+      const url = `http://192.168.1.61:8080/circle/getAll/${userId}`;
+
+      try {
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: { 'Authorization': `Bearer ${accessToken}` },
+        });
+
+        const contentType = response.headers.get("Content-Type");
+
+        if (!contentType || !contentType.includes("application/json")) {
+          throw new Error("Response is not in JSON format.");
+        }
+
+        const data = await response.json();
+        console.log("Received Circles Data:", data);
+
+        setCircles(data);
+      } catch (error) {
+        console.error("Error fetching circles data:", error);
+      }
+    };
+
+    fetchCircles();
+  }, [userId, accessToken]); // Fetch circles whenever userId or accessToken changes
+  
   useEffect(() => {
     const fetchAuthData = async () => {
       try {
@@ -57,31 +89,39 @@ export default function Home() {
     getLocation();
   }, []);
 
-  const fetchAlerts = async () => {
+  // Function to fetch alerts (unsafe and sos)
+  const fetchAlerts = async (circleId) => {
     try {
-      const response = await fetch("http://192.168.129.177:8080/alert/latest/sos", {
+      const response = await fetch(`http://192.168.1.61:8080/alert/${userId}/getAllActiveUserAlerts`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
       });
-  
+
       if (response.ok) {
         const data = await response.json();
+        console.log("Fetched Alerts:", data);  // Log alerts for debugging
         setAlerts(data); // Save the alerts array to state
-      } 
+      } else {
+        console.error("Failed to fetch alerts:", response.status);
+      }
     } catch (error) {
       console.error("Error fetching alerts:", error);
     }
   };
- 
-  useEffect(() => {
-    fetchAlerts(); // Fetch alerts when the component mounts
 
-    const interval = setInterval(fetchAlerts, 10000); // Fetch every 5 minutes
-    return () => clearInterval(interval); // Clear interval on component unmount
-  }, [accessToken]);
+  useEffect(() => {
+    if (userId) {
+      fetchAlerts(userId); // Fetch alerts when the component mounts with userId as circleId
+
+      const interval = setInterval(() => {
+        fetchAlerts(userId); // Fetch every 10 seconds
+      }, 10000);
+      return () => clearInterval(interval); // Clear interval on component unmount
+    }
+  }, [accessToken, userId]);
 
   const moveToUserLocation = () => {
     if (mapRef.current && location) {
@@ -129,7 +169,7 @@ export default function Home() {
           longitudeDelta: 0.0020,
         }}
       >
-        <Marker style={styles.marker}
+        <Marker
           coordinate={{
             latitude: location.latitude,
             longitude: location.longitude,
@@ -139,19 +179,23 @@ export default function Home() {
           onPress={() => handleAlertMarkerPress(location.latitude, location.longitude)}
         />
 
-        {alerts.map((alert, index) => (
-          <Marker
-            key={index}
-            coordinate={{
-              latitude: alert.location.latitude,
-              longitude: alert.location.longitude,
-            }}
-            title={`${alert.firstName} has sent an sos`}
-            description={alert.description}
-            pinColor={alert.status === "UNSAFE" ? "yellow" : "red"} // Differentiate markers by status
-            onPress={() => handleAlertMarkerPress(alert.location.latitude, alert.location.longitude)}
-          />
-        ))}
+        {/* Displaying all alerts on the map with separate markers for 'UNSAFE' and 'SOS' */}
+        {alerts.map((alert, index) => {
+          console.log("Alert data:", alert); // Log alert details for debugging
+          return (
+            <Marker
+              key={index}
+              coordinate={{
+                latitude: alert.location.latitude,
+                longitude: alert.location.longitude,
+              }}
+              title={`${alert.firstName} has sent an alert`}
+              description={alert.description}
+              pinColor={alert.status === "UNSAFE" ? "yellow" : alert.status === "SOS" ? "red" : "gray"} // Yellow for UNSAFE, Red for SOS
+              onPress={() => handleAlertMarkerPress(alert.location.latitude, alert.location.longitude)}
+            />
+          );
+        })}
       </MapView>
 
       <Button
@@ -184,5 +228,4 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginBottom: 30,
   },
- 
 });
