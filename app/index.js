@@ -572,7 +572,11 @@ export default function Home() {
       }
 
       // Haal locatiegegevens op (je moet de `getLocation` functie implementeren)
-      const location = { latitude: 50.96099997216114, longitude: 4.372219992158251 }; // Voorbeeldlocatie
+      const location = await getLocation();
+      if (!location) {
+        Alert.alert('Error', 'Could not retrieve location.');
+        return;
+      }; // Voorbeeldlocatie
 
       // Maak het "unsafe" data object
       const unsafeData = {

@@ -5,10 +5,12 @@ import {
   StyleSheet,
   TouchableOpacity,
   FlatList,
-  Alert
+  Alert,
+  Linking,
 } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import * as SecureStore from "expo-secure-store";
+import { format } from "date-fns"; // Importing date-fns for date formatting
 
 const CircleHistory = () => {
   const [alertHistory, setAlertHistory] = useState([]);
@@ -51,7 +53,7 @@ const CircleHistory = () => {
           `http://192.168.1.61:8080/alert/${storedUserId}/${circleId}/getAllCircleAlerts`,
           {
             method: "GET",
-            headers: { Authorization: `Bearer ${accessToken}` }
+            headers: { Authorization: `Bearer ${accessToken}` },
           }
         );
 
@@ -67,6 +69,13 @@ const CircleHistory = () => {
     fetchAlertHistory();
   }, [accessToken, circleId]);
 
+  const openLocationInMaps = (latitude, longitude) => {
+    const url = `https://www.google.com/maps?q=${latitude},${longitude}`;
+    Linking.openURL(url).catch((err) =>
+      Alert.alert("Error", `Unable to open the map: ${err.message}`)
+    );
+  };
+
   return (
     <View style={styles.container}>
       <TouchableOpacity
@@ -78,26 +87,31 @@ const CircleHistory = () => {
       <Text style={styles.title}>Alert History</Text>
       <FlatList
         data={alertHistory}
-        keyExtractor={(item) => item.id ? item.id.toString() : Math.random().toString()}
-        renderItem={({ item }) => (
-          <View style={styles.alertItem}>
-            <Text>{item.description}</Text>
-            <Text>
-              {item.timestamp ? new Date(item.timestamp).toLocaleString() : "Invalid Date"}
-            </Text>
-            <TouchableOpacity
-              style={styles.locationButton}
-              onPress={() =>
-                navigation.navigate("map", {
-                  latitude: item.latitude,
-                  longitude: item.longitude,
-                })
-              }
-            >
-              <Text style={styles.locationButtonText}>Show Location</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+        keyExtractor={(item) =>
+          item.id ? item.id.toString() : Math.random().toString()
+        }
+        renderItem={({ item }) => {
+          // Formatting the date
+          const formattedDate = format(new Date(item.createdAt), "PPpp");
+
+          return (
+            <View style={styles.alertItem}>
+              <Text>{item.description}</Text>
+              <Text>{formattedDate}</Text> {/* Display formatted date */}
+              <TouchableOpacity
+                style={styles.locationButton}
+                onPress={() =>
+                  openLocationInMaps(
+                    item.location.latitude,
+                    item.location.longitude
+                  )
+                }
+              >
+                <Text style={styles.locationButtonText}>Show Location</Text>
+              </TouchableOpacity>
+            </View>
+          );
+        }}
       />
     </View>
   );
@@ -116,25 +130,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 20,
     backgroundColor: "#CD9594",
-    borderRadius: 10
+    borderRadius: 10,
   },
   backButtonText: {
     fontSize: 16,
     color: "#fff",
-    fontWeight: "bold"
+    fontWeight: "bold",
   },
   title: {
     fontSize: 28,
     fontWeight: "600",
     marginBottom: 30,
     color: "#333",
-    textAlign: "center"
+    textAlign: "center",
   },
   alertItem: {
     padding: 10,
     backgroundColor: "#f0f0f0",
     borderRadius: 8,
-    marginBottom: 10
+    marginBottom: 10,
   },
   locationButton: {
     marginTop: 10,

@@ -92,7 +92,7 @@ export default function Home() {
   // Function to fetch alerts (unsafe and sos)
   const fetchAlerts = async (circleId) => {
     try {
-      const response = await fetch(`http://192.168.1.61:8080/alert/${userId}/getAllActiveUserAlerts`, {
+      const response = await fetch(`http://192.168.1.61:8080/alert/${userId}/${circleId}/getAllCircleAlerts`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${accessToken}`,
