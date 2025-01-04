@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Switch } f
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';  // Import useTranslation
 import i18n from '../i18n'; // Import i18n-config bestand
+import LocationUpdater from './location';
 
 export default function Settings() {
   const navigation = useNavigation();
@@ -26,7 +27,7 @@ export default function Settings() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollContainer}>
+    <ScrollView contentContainerStyle={styles.scrollContainer}> <LocationUpdater />
       <View style={styles.container}>
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <Text style={styles.backButtonText}>{t('back')}</Text>  {/* Vertaal de "Back" knop */}

@@ -13,6 +13,7 @@ import { Link } from "expo-router";
 import { FontAwesome } from "@expo/vector-icons";
 import * as SecureStore from "expo-secure-store";
 import profilePicture from '../assets/images/PP-removebg-preview.png';
+import LocationUpdater from './location';
 
 export default function ProfilePI() {
   const [user, setUser] = useState({
@@ -107,7 +108,7 @@ export default function ProfilePI() {
   };
   
   return (
-    <ScrollView contentContainerStyle={styles.scrollContainer}>
+    <ScrollView contentContainerStyle={styles.scrollContainer}> <LocationUpdater />
       <View style={styles.container}>
         {/* Back Button */}
         <TouchableOpacity style={styles.backButton}>

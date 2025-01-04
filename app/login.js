@@ -158,7 +158,7 @@ export default function LoginPage() {
       style={{ flex: 1 }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView contentContainerStyle={styles.container}> 
         <Image source={logo} style={styles.logo} /> 
         <Text style={styles.title}>Login</Text>
         <TextInput

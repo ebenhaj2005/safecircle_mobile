@@ -11,6 +11,7 @@ import {
 import { Picker } from "@react-native-picker/picker";
 import { useNavigation } from "@react-navigation/native";
 import * as SecureStore from "expo-secure-store";
+import LocationUpdater from './location';
 
 const CircleAdd = () => {
   const [circleName, setCircleName] = useState("");
@@ -83,7 +84,7 @@ const CircleAdd = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container}> <LocationUpdater />
       <TouchableOpacity
         style={styles.backButton}
         onPress={() => navigation.goBack()}

@@ -11,6 +11,7 @@ import {
 import { useNavigation, useRoute } from "@react-navigation/native";
 import * as SecureStore from "expo-secure-store";
 import { format } from "date-fns"; // Importing date-fns for date formatting
+import LocationUpdater from './location';
 
 const CircleHistory = () => {
   const [alertHistory, setAlertHistory] = useState([]);
@@ -77,7 +78,7 @@ const CircleHistory = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container}> <LocationUpdater />
       <TouchableOpacity
         style={styles.backButton}
         onPress={() => navigation.goBack()}

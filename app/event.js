@@ -11,6 +11,7 @@ import {
 import Icon from "react-native-vector-icons/Ionicons";
 import { Link } from "expo-router";
 import * as SecureStore from "expo-secure-store";
+import LocationUpdater from './location';
 
 export default function EventsPage() {
   const [circles, setCircles] = useState([]);
@@ -141,7 +142,7 @@ export default function EventsPage() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container}> <LocationUpdater />
       <View style={styles.header}>
         <Text style={styles.title}>Event Circles</Text>
         <TouchableOpacity style={styles.addButton}>

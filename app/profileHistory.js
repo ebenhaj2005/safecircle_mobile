@@ -1,10 +1,11 @@
 import React from 'react';
 import { Text, View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Link } from 'expo-router';
+import LocationUpdater from './location';
 
 export default function ProfileHistory() {
   return (
-    <ScrollView contentContainerStyle={styles.scrollContainer}>
+    <ScrollView contentContainerStyle={styles.scrollContainer}> <LocationUpdater />
       <View style={styles.container}>
         {/* Back Button */}
         <TouchableOpacity style={styles.backButton}>

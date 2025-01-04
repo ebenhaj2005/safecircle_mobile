@@ -9,6 +9,7 @@ import {
   Modal
 } from "react-native";
 import { Link } from "expo-router";
+import LocationUpdater from './location';
 
 export default function Contact() {
   const [subject, setSubject] = useState("Choose a subject");
@@ -26,7 +27,7 @@ export default function Contact() {
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
-      <View style={styles.container}>
+      <View style={styles.container}> <LocationUpdater />
 
       <TouchableOpacity style={styles.backButton}>
           <Link href="/profile" style={{ alignSelf: "flex-start" }}>

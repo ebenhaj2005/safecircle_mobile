@@ -1,9 +1,10 @@
 import { View, Text, StyleSheet, TextInput, Alert, Image } from 'react-native';
 import { Link, router } from 'expo-router';
 import React, { useState } from 'react';
-
+  import LocationUpdater from './location';
 export default function passwordForget() {
   const [email, setEmail] = useState('');
+
 
   const handlePasswordRecovery = () => {
     if (!email) {
@@ -15,7 +16,7 @@ export default function passwordForget() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container}> <LocationUpdater />
          <Image
         source={require("../assets/images/safecirclelogo.png")}
         style={{ width: 300, height: 300, marginBottom: 20 }}

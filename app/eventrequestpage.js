@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { Link } from "expo-router";
 import * as SecureStore from "expo-secure-store";
+import LocationUpdater from './location';
 
 export default function EventRequestPage() {
   const [eventName, setEventName] = useState("");
@@ -147,7 +148,7 @@ export default function EventRequestPage() {
   
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container}> <LocationUpdater />
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton}>
           <Link href="/event" style={styles.link}>

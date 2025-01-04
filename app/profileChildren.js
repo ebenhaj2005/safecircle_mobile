@@ -2,7 +2,7 @@ import React from 'react';
 import { Text, View, Image, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Link } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
-
+import LocationUpdater from './location';
 export default function ProfileChildren() {
   const user = {
     firstName: 'John',
@@ -16,7 +16,7 @@ export default function ProfileChildren() {
   ];
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollContainer}>
+    <ScrollView contentContainerStyle={styles.scrollContainer}> <LocationUpdater />
       <View style={styles.container}>
         {/* Back Button */}
         <TouchableOpacity style={styles.backButton}>

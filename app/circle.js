@@ -11,6 +11,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import * as SecureStore from "expo-secure-store";
+import LocationUpdater from './location';
 
 const Circle = () => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -153,7 +154,8 @@ const Circle = () => {
     const isRegularCircle = item.circleType === "REGULAR";  // Check if circle is "REGULAR"
     
     return (
-      <View style={styles.circleContainer}>
+   
+      <View style={styles.circleContainer}>   <LocationUpdater />
         <TouchableOpacity
           onPress={() => {
             if (isRegularCircle) {

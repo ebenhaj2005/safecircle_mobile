@@ -10,6 +10,7 @@ import {
 import * as SecureStore from "expo-secure-store";
 import { Link } from "expo-router";
 import profilePicture from '../assets/images/PP-removebg-preview.png';
+import LocationUpdater from './location';
 
 export default function Profile() {
   const [userName, setUserName] = useState("Loading...");
@@ -50,7 +51,7 @@ export default function Profile() {
     fetchUserData();
   }, []);
   return (
-    <ScrollView contentContainerStyle={styles.scrollContainer}>
+    <ScrollView contentContainerStyle={styles.scrollContainer}> <LocationUpdater />
       <View style={styles.container}>
         {/* Profile Picture */}
         <View style={styles.profilePictureContainer}>

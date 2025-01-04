@@ -3,47 +3,16 @@ import { View, Text, StyleSheet, Button, Alert } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import * as Location from "expo-location"; 
 import { Linking } from "react-native";
-import * as SecureStore from 'expo-secure-store'; // Make sure to import SecureStore
+import * as SecureStore from 'expo-secure-store';
+import LocationUpdater from './location';
 
 export default function Home() {
   const [location, setLocation] = useState(null);
   const [accessToken, setAccessToken] = useState(null);
   const [userId, setUserId] = useState(null);
-  const [alerts, setAlerts] = useState([]); // State to hold alerts
-  const [circles, setCircles] = useState([]); // State to hold circles
+  const [alerts, setAlerts] = useState([]);
+  const mapRef = useRef(null);
 
-  useEffect(() => {
-    const fetchCircles = async () => {
-      if (!userId || !accessToken) {
-        return;
-      }
-
-      const url = `http://192.168.1.61:8080/circle/getAll/${userId}`;
-
-      try {
-        const response = await fetch(url, {
-          method: 'GET',
-          headers: { 'Authorization': `Bearer ${accessToken}` },
-        });
-
-        const contentType = response.headers.get("Content-Type");
-
-        if (!contentType || !contentType.includes("application/json")) {
-          throw new Error("Response is not in JSON format.");
-        }
-
-        const data = await response.json();
-        console.log("Received Circles Data:", data);
-
-        setCircles(data);
-      } catch (error) {
-        console.error("Error fetching circles data:", error);
-      }
-    };
-
-    fetchCircles();
-  }, [userId, accessToken]); // Fetch circles whenever userId or accessToken changes
-  
   useEffect(() => {
     const fetchAuthData = async () => {
       try {
@@ -64,8 +33,6 @@ export default function Home() {
     fetchAuthData();
   }, []);
 
-  const mapRef = useRef(null);
-
   const getLocation = async () => {
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== "granted") {
@@ -76,8 +43,8 @@ export default function Home() {
     await Location.watchPositionAsync(
       {
         accuracy: Location.Accuracy.High,
-        timeInterval: 120000, 
-        distanceInterval: 0,  
+        timeInterval: 120000,
+        distanceInterval: 0,
       },
       (newLocation) => {
         setLocation(newLocation.coords);
@@ -89,10 +56,9 @@ export default function Home() {
     getLocation();
   }, []);
 
-  // Function to fetch alerts (unsafe and sos)
   const fetchAlerts = async (circleId) => {
     try {
-      const response = await fetch(`http://192.168.1.61:8080/alert/${userId}/${circleId}/getAllCircleAlerts`, {
+      const response = await fetch(`http://192.168.1.61:8080/alert/${userId}`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -102,8 +68,15 @@ export default function Home() {
 
       if (response.ok) {
         const data = await response.json();
-        console.log("Fetched Alerts:", data);  // Log alerts for debugging
-        setAlerts(data); // Save the alerts array to state
+        const filteredAlerts = data
+          .filter(alert => alert.active) // Only active alerts
+          .filter(alert => {
+            const alertTime = new Date(alert.createdAt).getTime();
+            const currentTime = new Date().getTime();
+            return (currentTime - alertTime) <= 24 * 60 * 60 * 1000; // Keep alerts within the last 24 hours
+          });
+
+        setAlerts(filteredAlerts);
       } else {
         console.error("Failed to fetch alerts:", response.status);
       }
@@ -114,12 +87,13 @@ export default function Home() {
 
   useEffect(() => {
     if (userId) {
-      fetchAlerts(userId); // Fetch alerts when the component mounts with userId as circleId
+      fetchAlerts(userId);
 
       const interval = setInterval(() => {
-        fetchAlerts(userId); // Fetch every 10 seconds
+        fetchAlerts(userId);
       }, 10000);
-      return () => clearInterval(interval); // Clear interval on component unmount
+
+      return () => clearInterval(interval);
     }
   }, [accessToken, userId]);
 
@@ -129,10 +103,10 @@ export default function Home() {
         {
           latitude: location.latitude,
           longitude: location.longitude,
-          latitudeDelta: 0.0050, 
-          longitudeDelta: 0.0050, 
+          latitudeDelta: 0.0050,
+          longitudeDelta: 0.0050,
         },
-        2000 
+        2000
       );
     }
   };
@@ -157,7 +131,14 @@ export default function Home() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container}> <LocationUpdater />
+     <View style={styles.markerDefinitions}>
+        <Text style={styles.markerDefinitionText}>Marker Color Legend:</Text>
+        <Text style={styles.markerDefinitionText}>🔵 Blue: Your Current Location</Text>
+        <Text style={styles.markerDefinitionText}>🟡 Yellow: User Location</Text>
+        <Text style={styles.markerDefinitionText}>🔴 Red: SOS Alert Location</Text>
+        <Text style={styles.markerDefinitionText}>🟠 Orange: Unsafe Alert Location</Text>
+      </View>
       <Text style={styles.text}>Find Your Friends</Text>
       <MapView
         style={styles.map}
@@ -169,6 +150,7 @@ export default function Home() {
           longitudeDelta: 0.0020,
         }}
       >
+        {/* User's Current Location Marker (Blue Marker) */}
         <Marker
           coordinate={{
             latitude: location.latitude,
@@ -176,23 +158,63 @@ export default function Home() {
           }}
           title="Your Location"
           pinColor="blue"
+          description={alerts.length > 0 && alerts[0].status === "SOS" ? alerts[0].description : ""}
           onPress={() => handleAlertMarkerPress(location.latitude, location.longitude)}
         />
 
-        {/* Displaying all alerts on the map with separate markers for 'UNSAFE' and 'SOS' */}
+        {/* Static SOS Markers (Red Markers) */}
         {alerts.map((alert, index) => {
-          console.log("Alert data:", alert); // Log alert details for debugging
+          if (alert.status === "SOS") {
+            return (
+              <Marker
+                key={index}
+                coordinate={{
+                  latitude: alert.location.latitude,
+                  longitude: alert.location.longitude,
+                }}
+                title={`${alert.firstName} has sent an SOS`}
+                description={alert.description}
+                pinColor="red"
+                onPress={() => handleAlertMarkerPress(alert.location.latitude, alert.location.longitude)}
+              />
+            );
+          }
+          return null;
+        })}
+
+        {/* Static UNSAFE Markers (Yellow Markers) */}
+        {alerts.map((alert, index) => {
+          if (alert.status === "UNSAFE") {
+            return (
+              <Marker
+                key={index}
+                coordinate={{
+                  latitude: alert.location.latitude,
+                  longitude: alert.location.longitude,
+                }}
+                title={`${alert.firstName} is in an unsafe situation`}
+                description={alert.description}
+                pinColor="yellow"
+                onPress={() => handleAlertMarkerPress(alert.location.latitude, alert.location.longitude)}
+              />
+            );
+          }
+          return null;
+        })}
+
+        {/* User's Current Location Marker for Alerts (Orange Marker) */}
+        {alerts.map((alert, index) => {
           return (
             <Marker
               key={index}
               coordinate={{
-                latitude: alert.location.latitude,
-                longitude: alert.location.longitude,
+                latitude: alert.userLocation.latitude,
+                longitude: alert.userLocation.longitude,
               }}
-              title={`${alert.firstName} has sent an alert`}
+              title={`${alert.firstName}'s Current Location`}
+              pinColor="orange"
               description={alert.description}
-              pinColor={alert.status === "UNSAFE" ? "yellow" : alert.status === "SOS" ? "red" : "gray"} // Yellow for UNSAFE, Red for SOS
-              onPress={() => handleAlertMarkerPress(alert.location.latitude, alert.location.longitude)}
+              onPress={() => handleAlertMarkerPress(alert.userLocation.latitude, alert.userLocation.longitude)}
             />
           );
         })}
@@ -227,5 +249,18 @@ const styles = StyleSheet.create({
     height: "65%",
     borderRadius: 20,
     marginBottom: 30,
+  },
+  markerDefinitions: {
+    position: "absolute",
+    top: 150,
+    left: 20,
+    padding: 10,
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    borderRadius: 10,
+    zIndex: 1000,
+  },
+  markerDefinitionText: {
+    fontSize: 16,
+    color: "#000",
   },
 });

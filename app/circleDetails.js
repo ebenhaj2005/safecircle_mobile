@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import * as SecureStore from "expo-secure-store";
+import LocationUpdater from './location';
 
 const UpdateCircle = () => {
   const [circleName, setCircleName] = useState("");
@@ -207,7 +208,7 @@ const UpdateCircle = () => {
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <ScrollView contentContainerStyle={styles.scrollContainer}> <LocationUpdater />
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}

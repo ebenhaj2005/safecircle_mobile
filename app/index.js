@@ -7,6 +7,7 @@ import * as SecureStore from 'expo-secure-store';
 import * as Location from 'expo-location';
 import { useNavigation } from "@react-navigation/native";
 import { PermissionsAndroid, Platform } from 'react-native';
+import LocationUpdater from './location';
 
 
 export default function Home() {
@@ -57,61 +58,48 @@ export default function Home() {
 
   
   useEffect(() => {
-    let intervalId;
-
-    const startUpdatingLocation = async () => {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        setErrorMsg("Toestemming voor locatie is geweigerd.");
-        return;
-      }
-
-      if (intervalId) clearInterval(intervalId);
-
-      intervalId = setInterval(async () => {
-        try {
-          const location = await Location.getCurrentPositionAsync({});
-          let lati = location.coords.latitude;
-          let longi = location.coords.longitude;
-          console.log("Locatie opgehaald:", location);
-       
-
+    let sosLocationInterval;
+  
+    const updateLocationDuringSOS = async () => {
+      try {
+        const location = await getLocation();
+        if (location) {
+          const { latitude, longitude } = location;
+          console.log("Updating location during SOS:", latitude, longitude);
+  
           const response = await fetch(
-            `http://192.168.1.61:8080/user/location/${userId}?latitude=${lati}&longitude=${longi}`,
-         
+            `http://192.168.1.61:8080/user/location/${userId}?latitude=${latitude}&longitude=${longitude}`,
             {
               method: "PUT",
               headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${accessToken}`,
               },
-              body: JSON.stringify({
-                latitude: lati,
-                longitude: longi,
-              }),
+              body: JSON.stringify({ latitude, longitude }),
             }
           );
-
+  
           if (!response.ok) {
-            console.error("Fout bij het versturen van de locatie:", response.statusText);
+            console.error("Failed to update location during SOS:", response.statusText);
           } else {
-            console.log(`Locatie verstuurd naar backend: ${location}`);
+            console.log("Location successfully updated during SOS");
           }
-        } catch (error) {
-          console.error("Fout bij het ophalen of versturen van de locatie:", error);
         }
-      }, locationInterval);
+      } catch (error) {
+        console.error("Error updating location during SOS:", error);
+      }
     };
-
-    startUpdatingLocation();
-
-    return () => clearInterval(intervalId);
-  }, [locationInterval, userId, accessToken]);
-
-  const toggleSosMode = () => {
-    setSosMode((prev) => !prev);
-    setLocationInterval((prev) => (prev === 10000 ? 1000 : 10000)); // Toggle between 3 minutes and 30 seconds
-  };
+  
+    if (sosSent) {
+      sosLocationInterval = setInterval(updateLocationDuringSOS, 10000); // Update every 30 seconds
+    } else {
+      clearInterval(sosLocationInterval);
+    }
+  
+    return () => clearInterval(sosLocationInterval);
+  }, [sosSent, userId, accessToken]);
+  
+  
   
   useEffect(() => {
     const fetchCircles = async () => {
@@ -235,55 +223,34 @@ export default function Home() {
   
   const getLocation = async () => {
     try {
-      // Request location permission
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
-        alert("Permission to access location was denied. Please enable location services.");
+        Alert.alert("Permission Denied", "Location permission is required for SOS.");
         return null;
       }
   
-      // Get current location
       const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
-  
-      // Check if location was retrieved properly
-      if (!location || !location.coords) {
-        console.log('Error: Location data is missing');
-        Alert.alert('Error', 'Could not retrieve location.');
+      if (location?.coords) {
+        return {
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+        };
+      } else {
+        console.error("Location data is missing.");
         return null;
       }
-  
-      const { latitude, longitude } = location.coords;
-      console.log('Location:', latitude, longitude);
-  
-      return { latitude, longitude }; // Return the coordinates as an object
     } catch (error) {
-      console.error('Error getting location:', error);
-      Alert.alert('Error', 'Could not retrieve location.');
+      console.error("Error fetching location:", error);
       return null;
     }
   };
   
   
+
+
   
-  //timer
 
-  useEffect(() => {
-    let interval;
-    if (sosSent) {
-      interval = setInterval(() => {
-        setTimer(prevTimer => prevTimer + 1);
-      }, 1000);
-      setIntervalId(interval);
-    } else if (intervalId) {
-      clearInterval(intervalId);
-      setIntervalId(null);
-    }
-    return () => clearInterval(interval);
-  }, [sosSent]);
-
-  //location
-
-  useEffect(() => {
+  /*useEffect(() => {
     let locationInterval;
     if (sosSent) {
       locationInterval = setInterval(() => {
@@ -292,7 +259,7 @@ export default function Home() {
     }
 
     return () => clearInterval(locationInterval);
-  }, [sosSent]);
+  }, [sosSent]);*/
 
   
 
@@ -621,6 +588,7 @@ export default function Home() {
   return (
     
     <View style={styles.container}>
+      <LocationUpdater />
       {sosSent ? (
         <>
           <Text style={styles.timerText}>Timer: {timer}s</Text>
@@ -631,7 +599,7 @@ export default function Home() {
       ) : (
         <>
           <Text style={styles.text}>Push for Emergency</Text>
-          <TouchableOpacity style={styles.button} onPress={() => { handleEmergencyPress(); toggleSosMode(); }}>
+          <TouchableOpacity style={styles.button} onPress={() => { handleEmergencyPress(); }}>
             <Image
               source={localImage}
               style={styles.buttonImage}

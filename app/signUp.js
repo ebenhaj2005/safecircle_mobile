@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { Link, router } from "expo-router";
 import logo from '../assets/images/geenBackground.png'; // Import the image at the top
+import LocationUpdater from './location';
 
 export default function SignUpPage() {
   const [firstName, setFirstName] = useState("");
@@ -86,7 +87,7 @@ export default function SignUpPage() {
       style={{ flex: 1 }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView contentContainerStyle={styles.container}> <LocationUpdater />
         <Image source={logo} style={styles.logo} /> {/* Use the imported image variable */}
         <Text style={styles.title}>Sign Up</Text>
         <TextInput
