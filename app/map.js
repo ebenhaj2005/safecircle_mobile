@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useRef } from "react";
 import { View, Text, StyleSheet, Button, Alert } from "react-native";
 import MapView, { Marker } from "react-native-maps";
-import * as Location from "expo-location"; 
+import * as Location from "expo-location";
 import { Linking } from "react-native";
-import * as SecureStore from 'expo-secure-store';
-import LocationUpdater from './location';
+import * as SecureStore from "expo-secure-store";
+import LocationUpdater from "./location";
+import { format } from "date-fns"; // Importing date-fns for date formatting
 
 export default function Home() {
   const [location, setLocation] = useState(null);
@@ -68,15 +69,7 @@ export default function Home() {
 
       if (response.ok) {
         const data = await response.json();
-        const filteredAlerts = data
-          .filter(alert => alert.active) // Only active alerts
-          .filter(alert => {
-            const alertTime = new Date(alert.createdAt).getTime();
-            const currentTime = new Date().getTime();
-            return (currentTime - alertTime) <= 24 * 60 * 60 * 1000; // Keep alerts within the last 24 hours
-          });
-
-        setAlerts(filteredAlerts);
+        setAlerts(data);
       } else {
         console.error("Failed to fetch alerts:", response.status);
       }
@@ -103,8 +96,8 @@ export default function Home() {
         {
           latitude: location.latitude,
           longitude: location.longitude,
-          latitudeDelta: 0.0050,
-          longitudeDelta: 0.0050,
+          latitudeDelta: 0.005,
+          longitudeDelta: 0.005,
         },
         2000
       );
@@ -131,26 +124,27 @@ export default function Home() {
   }
 
   return (
-    <View style={styles.container}> <LocationUpdater />
-     <View style={styles.markerDefinitions}>
+    <View style={styles.container}>
+      <LocationUpdater />
+      <View style={styles.markerDefinitions}>
         <Text style={styles.markerDefinitionText}>Marker Color Legend:</Text>
         <Text style={styles.markerDefinitionText}>🔵 Blue: Your Current Location</Text>
-        <Text style={styles.markerDefinitionText}>🟡 Yellow: User Location</Text>
-        <Text style={styles.markerDefinitionText}>🔴 Red: SOS Alert Location</Text>
-        <Text style={styles.markerDefinitionText}>🟠 Orange: Unsafe Alert Location</Text>
+        <Text style={styles.markerDefinitionText}>🔴 Red: Active SOS Alert</Text>
+        <Text style={styles.markerDefinitionText}>🟢 Green: Stopped SOS Alert</Text>
+        <Text style={styles.markerDefinitionText}>🟡 Yellow: Unsafe Alert</Text>
       </View>
-      <Text style={styles.text}>Find Your Friends</Text>
+      <Text style={styles.text}>Alert Map</Text>
       <MapView
         style={styles.map}
         ref={mapRef}
         initialRegion={{
           latitude: location.latitude,
           longitude: location.longitude,
-          latitudeDelta: 0.0020,
-          longitudeDelta: 0.0020,
+          latitudeDelta: 0.002,
+          longitudeDelta: 0.002,
         }}
       >
-        {/* User's Current Location Marker (Blue Marker) */}
+        {/* User's Current Location Marker */}
         <Marker
           coordinate={{
             latitude: location.latitude,
@@ -158,65 +152,58 @@ export default function Home() {
           }}
           title="Your Location"
           pinColor="blue"
-          description={alerts.length > 0 && alerts[0].status === "SOS" ? alerts[0].description : ""}
-          onPress={() => handleAlertMarkerPress(location.latitude, location.longitude)}
+          description="This is your current location"
         />
 
-        {/* Static SOS Markers (Red Markers) */}
+        {/* Alerts Markers */}
         {alerts.map((alert, index) => {
           if (alert.status === "SOS") {
-            return (
+            return alert.active ? (
+              // Active SOS: Red Marker (User Location)
               <Marker
-                key={index}
+                key={`green-${index}`}
                 coordinate={{
-                  latitude: alert.location.latitude,
-                  longitude: alert.location.longitude,
+                  latitude: alert.userLocation.latitude,
+                  longitude: alert.userLocation.longitude,
                 }}
                 title={`${alert.firstName} has sent an SOS`}
                 description={alert.description}
-                pinColor="red"
-                onPress={() => handleAlertMarkerPress(alert.location.latitude, alert.location.longitude)}
+                pinColor="green"
               />
-            );
-          }
-          return null;
-        })}
-
-        {/* Static UNSAFE Markers (Yellow Markers) */}
-        {alerts.map((alert, index) => {
-          if (alert.status === "UNSAFE") {
-            return (
+            ) : (
+              // Stopped SOS: Green Marker (Static Location)
               <Marker
-                key={index}
+                key={`red-${index}`}
                 coordinate={{
                   latitude: alert.location.latitude,
                   longitude: alert.location.longitude,
                 }}
-                title={`${alert.firstName} is in an unsafe situation`}
-                description={alert.description}
-                pinColor="yellow"
-                onPress={() => handleAlertMarkerPress(alert.location.latitude, alert.location.longitude)}
+                title={`${alert.firstName} has sent an SOS alert `}
+                description={alert.description + " (Stopped)"} 
+
+
+                pinColor="red"
               />
             );
           }
-          return null;
-        })}
 
-        {/* User's Current Location Marker for Alerts (Orange Marker) */}
-        {alerts.map((alert, index) => {
-          return (
-            <Marker
-              key={index}
-              coordinate={{
-                latitude: alert.userLocation.latitude,
-                longitude: alert.userLocation.longitude,
-              }}
-              title={`${alert.firstName}'s Current Location`}
-              pinColor="orange"
-              description={alert.description}
-              onPress={() => handleAlertMarkerPress(alert.userLocation.latitude, alert.userLocation.longitude)}
-            />
-          );
+          if (alert.status === "UNSAFE") {
+  
+            return (
+              <Marker
+                key={`yellow-${index}`}
+                coordinate={{
+                  latitude: alert.location.latitude,
+                  longitude: alert.location.longitude,
+                }}
+                title={`${alert.firstName} is unsafe`}
+                description={alert.description}
+                pinColor="yellow"
+              />
+            );
+          }
+
+          return null;
         })}
       </MapView>
 

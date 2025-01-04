@@ -91,7 +91,7 @@ export default function Home() {
     };
   
     if (sosSent) {
-      sosLocationInterval = setInterval(updateLocationDuringSOS, 10000); // Update every 30 seconds
+      sosLocationInterval = setInterval(updateLocationDuringSOS, 30000); // Update every 30 seconds
     } else {
       clearInterval(sosLocationInterval);
     }
