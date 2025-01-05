@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, {  useState, useEffect , useRef } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image,Button, Modal, Alert, TextInput, FlatList, ScrollView } from 'react-native';
 import localImage from '../assets/images/geenBackground.png';
 import * as Notifications from 'expo-notifications';
@@ -8,6 +8,8 @@ import * as Location from 'expo-location';
 import { useNavigation } from "@react-navigation/native";
 import { PermissionsAndroid, Platform } from 'react-native';
 import LocationUpdater from './location';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 
 export default function Home() {
@@ -28,9 +30,24 @@ export default function Home() {
   const [sosMode, setSosMode] = useState(false); 
   const [locationInterval, setLocationInterval] = useState(180000);
   const navigation = useNavigation();
+  
+  const timerInterval = useRef(null);
+
  
-  
-  
+  useEffect(() => {
+    const loadState = async () => {
+      const savedSosSent = await AsyncStorage.getItem('sosSent');
+      const savedTimer = await AsyncStorage.getItem('timer');
+      if (savedSosSent !== null) {
+        setSosSent(JSON.parse(savedSosSent));
+      }
+      if (savedTimer !== null) {
+        setTimer(parseInt(savedTimer, 10));
+      }
+    };
+    loadState();
+  }, []);
+
 
 
   useEffect(() => {
@@ -68,7 +85,7 @@ export default function Home() {
           console.log("Updating location during SOS:", latitude, longitude);
   
           const response = await fetch(
-            `http://192.168.1.61:8080/user/location/${userId}?latitude=${latitude}&longitude=${longitude}`,
+            `http://192.168.0.114:8080/user/location/${userId}?latitude=${latitude}&longitude=${longitude}`,
             {
               method: "PUT",
               headers: {
@@ -106,7 +123,7 @@ export default function Home() {
       if (!userId || !accessToken) return;
   
       try {
-        const response = await fetch(`http://192.168.1.61:8080/circle/getAll/${userId}`, {
+        const response = await fetch(`http://192.168.0.114:8080/circle/getAll/${userId}`, {
           method: "GET",
           headers: { Authorization: `Bearer ${accessToken}` },
         });
@@ -197,7 +214,7 @@ export default function Home() {
   
 
         
-        const response = await fetch(`http://192.168.1.61:8080/user/${userId}/register-token`, {
+        const response = await fetch(`http://192.168.0.114:8080/user/${userId}/register-token`, {
           method: 'POST',
           headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -308,10 +325,39 @@ export default function Home() {
     }
   };
  */
-  //sos
+
+
+
+  useEffect(() => {
+    const saveState = async () => {
+      await AsyncStorage.setItem('sosSent', JSON.stringify(sosSent));
+      await AsyncStorage.setItem('timer', timer.toString());
+    };
+    saveState();
+
+    if (sosSent) {
+      if (!timerInterval.current) {
+        timerInterval.current = setInterval(() => {
+          setTimer(prevTimer => {
+            const newTimer = prevTimer + 1;
+            AsyncStorage.setItem('timer', newTimer.toString());
+            return newTimer;
+          });
+        }, 1000);
+      }
+    } else {
+      clearInterval(timerInterval.current);
+      timerInterval.current = null;
+    }
+    return () => clearInterval(timerInterval.current);  // Cleanup
+  }, [sosSent]);
+
+  
+  
+  
   
   const handleSendSOS = async () => {
-    console.log('handleSendSOS function called');
+    //console.log('handleSendSOS function called');
     
     // Retrieve description from selected checkboxes
     const description = Object.keys(selectedCheckboxes)
@@ -348,10 +394,10 @@ export default function Home() {
       //userId: userId,  // The user's ID
     };
 
-    console.log('SOS Data to send:', JSON.stringify(sosData));
+    //console.log('SOS Data to send:', JSON.stringify(sosData));
 
     // Send the SOS data to the server
-    fetch(`http://192.168.1.61:8080/alert/${userId}/send`, {
+    fetch(`http://192.168.0.114:8080/alert/${userId}/send`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -366,6 +412,7 @@ export default function Home() {
         //sendPushNotification();
         setSosSent(true);
         setModalVisible(false);
+
       })
       .catch(error => {
         console.error('Error sending SOS alert:', error);
@@ -378,12 +425,14 @@ export default function Home() {
     //SOS stop
 
     const handleStopSOS = async () => {
-      // Reset the SOS state
       setSosSent(false);
+      clearInterval(timerInterval.current);
       setTimer(0);
-    
+      await AsyncStorage.setItem('sosSent', JSON.stringify(false));
+      await AsyncStorage.setItem('timer', '0');
+  
       try {
-        const response = await fetch(`http://192.168.1.61:8080/alert/${userId}/stop`, {
+        const response = await fetch(`http://192.168.0.114:8080/alert/${userId}/stop`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -560,7 +609,7 @@ export default function Home() {
       console.log('UNSAFE Data to send:', JSON.stringify(unsafeData));
 
       // Verstuur naar de backend
-      const response = await fetch(`http://192.168.1.61:8080/alert/${userId}/send`, {
+      const response = await fetch(`http://192.168.0.114:8080/alert/${userId}/send`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
