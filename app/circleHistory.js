@@ -51,7 +51,7 @@ const CircleHistory = () => {
         }
 
         const response = await fetch(
-          `http://192.168.1.61:8080/alert/${storedUserId}/${circleId}/getAllCircleAlerts`,
+          `http://192.168.0.114:8080/alert/${storedUserId}/${circleId}/getAllCircleAlerts`,
           {
             method: "GET",
             headers: { Authorization: `Bearer ${accessToken}` },

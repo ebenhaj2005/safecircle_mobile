@@ -44,6 +44,15 @@ export default function EventRequestPage() {
 
     fetchAuthData();
   }, []);
+  
+  const formatDateToISO = (dateString) => {
+    const [day, month, year] = dateString.split("/");
+    if (!day || !month || !year) {
+      return null; // Ongeldig formaat
+    }
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  };
+  
 
   const geocodeLocation = async (address) => {
     const geocodeUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`;
@@ -93,11 +102,13 @@ export default function EventRequestPage() {
     }
   
     const { lat, lon } = geocodedLocation;
-   /*  console.log("Geocoded location:", lat, lon); */
+
   
+     const formattedStartDate = formatDateToISO(startDay);
+    const formattedEndDate = formatDateToISO(endDay);
    
   
-    const requestUrl = 'http://192.168.1.61:8080/event/request';
+    const requestUrl = `http://192.168.0.114:8080/event/${userId}/request`;
   
 
     // Request body opstellen
@@ -106,16 +117,15 @@ export default function EventRequestPage() {
       eventName: eventName,
       eventStatus: "PENDING", // Event status (verander naar "PENDING" of "DRAFT" zoals je wil)
       email: email,
-      startDate: startDay, // Startdatum geformatteerd
-      endDate: endDay,     // Einddatum geformatteerd
+      startDate: formattedStartDate, // Startdatum geformatteerd
+      endDate: formattedEndDate,     // Einddatum geformatteerd
       location: {
         latitude: lat,    // Latitude van de geocode
         longitude: lon,   // Longitude van de geocode
       }
-    };
-/*     console.log("eheheh")
+    };  console.log("eheheh")
   
-    console.log("Request body:", JSON.stringify(requestBody)); */
+    console.log("Request body:", JSON.stringify(requestBody)); 
   
     // Verstuur de request
     try {
@@ -148,7 +158,7 @@ export default function EventRequestPage() {
   
 
   return (
-    <View style={styles.container}> <LocationUpdater />
+    <View style={styles.container}><LocationUpdater />
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton}>
           <Link href="/event" style={styles.link}>

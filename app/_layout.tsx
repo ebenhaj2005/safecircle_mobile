@@ -15,7 +15,7 @@ export default function RootLayout() {
     segments.includes("profileAddChild") ||
     segments.includes("profileChildren") ||
     segments.includes("profileHistory") ||
-    segments.includes("settings") ||
+    //segments.includes("settings") ||
     segments.includes("contact") ||
     segments.includes("profilePI");
   useEffect(() => {

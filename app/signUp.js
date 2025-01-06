@@ -50,7 +50,7 @@ export default function SignUpPage() {
     try {
 
 
-      const response = await fetch('http://192.168.1.61:8080/user/create', { // IP-adres van je thuis wifi (ipconfig)
+      const response = await fetch('http://192.168.0.114:8080/user/create', { // IP-adres van je thuis wifi (ipconfig)
 
 
         method: 'POST',
@@ -87,8 +87,8 @@ export default function SignUpPage() {
       style={{ flex: 1 }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <ScrollView contentContainerStyle={styles.container}> <LocationUpdater />
-        <Image source={logo} style={styles.logo} /> {/* Use the imported image variable */}
+      <ScrollView contentContainerStyle={styles.container}><LocationUpdater />
+        <Image source={logo} style={styles.logo} />
         <Text style={styles.title}>Sign Up</Text>
         <TextInput
           style={styles.input}
@@ -145,7 +145,7 @@ export default function SignUpPage() {
         />
         <Button title="Sign Up" onPress={handleSignUp} color="#CD9594" />
         <Link href="/login" style={styles.link}>
-          <Text>Already have an account? Login</Text>
+        <Text style={styles.linkText}>Already have an account? Login</Text>
         </Link>
       </ScrollView>
     </KeyboardAvoidingView>

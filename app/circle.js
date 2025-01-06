@@ -48,7 +48,7 @@ const Circle = () => {
         return;
       }
 
-      const url = `http://192.168.1.61:8080/circle/getAll/${userId}`;
+      const url = `http://192.168.0.114:8080/circle/getAll/${userId}`;
 
       try {
         const response = await fetch(url, {
@@ -77,7 +77,7 @@ const Circle = () => {
         return;
       }
 
-      const url = `http://192.168.1.61:8080/invitation/showAll/${userId}`;
+      const url = `http://192.168.0.114:8080/invitation/showAll/${userId}`;
 
       try {
         const response = await fetch(url, {
@@ -106,7 +106,7 @@ const Circle = () => {
 
     try {
       const response = await fetch(
-        `http://192.168.1.61:8080/invitation/${invitationId}/${circleId}/${receiverId}/accept`,
+        `http://192.168.0.114:8080/invitation/${invitationId}/${circleId}/${receiverId}/accept`,
         {
           method: "PUT",
           headers: {
@@ -118,7 +118,7 @@ const Circle = () => {
       if (!response.ok) throw new Error("Failed to accept invitation");
       Alert.alert("Success", "Invitation accepted!");
 
-      fetchCircles(); // Re-fetch circles to include the newly joined circle
+      //fetchCircles(); // Re-fetch circles to include the newly joined circle
       setInvitations((prev) =>
         prev.filter((inv) => inv.invitationId !== invitationId)
       ); // Remove the accepted invitation from the list
@@ -129,7 +129,7 @@ const Circle = () => {
   };
 
   const handleDeclineInvitation = async (invitationId) => {
-    const url = `http://192.168.1.61:8080/invitation/${invitationId}/decline`;
+    const url = `http://192.168.0.114:8080/invitation/${invitationId}/decline`;
     try {
       const response = await fetch(url, {
         method: "PUT",
@@ -155,7 +155,7 @@ const Circle = () => {
     
     return (
    
-      <View style={styles.circleContainer}>   <LocationUpdater />
+      <View style={styles.circleContainer}><LocationUpdater />
         <TouchableOpacity
           onPress={() => {
             if (isRegularCircle) {

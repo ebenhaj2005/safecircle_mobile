@@ -24,7 +24,7 @@ export default function Profile() {
 
         if (userId && accessToken) {
           
-          const response = await fetch(`http://192.168.1.61:8080/user/${userId}`, {
+          const response = await fetch(`http://192.168.0.114:8080/user/${userId}`, {
             headers: {
               Authorization: `Bearer ${accessToken}`, 
             },
@@ -51,7 +51,7 @@ export default function Profile() {
     fetchUserData();
   }, []);
   return (
-    <ScrollView contentContainerStyle={styles.scrollContainer}> <LocationUpdater />
+    <ScrollView contentContainerStyle={styles.scrollContainer}><LocationUpdater />
       <View style={styles.container}>
         {/* Profile Picture */}
         <View style={styles.profilePictureContainer}>
@@ -76,16 +76,16 @@ export default function Profile() {
               <Text style={styles.buttonText}>Children</Text>
             </Link> 
           </TouchableOpacity> */}
-          <TouchableOpacity style={styles.button}>
+         {/*  <TouchableOpacity style={styles.button}>
             <Link href="/app/settings" style={styles.link}>
               <Text style={styles.buttonText}>App Settings</Text>
             </Link>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button}>
+          </TouchableOpacity> */}
+          {/* <TouchableOpacity style={styles.button}>
             <Link href="/contact" style={styles.link}>
               <Text style={styles.buttonText}>Contact</Text>
             </Link>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
           <TouchableOpacity style={styles.button}>
             <Link href="/login" style={styles.link}>
             <Text style={styles.buttonText}>Log Out</Text>

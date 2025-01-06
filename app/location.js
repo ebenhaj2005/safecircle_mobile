@@ -46,7 +46,7 @@ const LocationUpdater = () => {
    
 
           const response = await fetch(
-            `http://192.168.1.61:8080/user/${userId}`,
+            `http://192.168.0.114:8080/user/${userId}`,
             {
               method: "PUT",
               headers: {
@@ -64,11 +64,11 @@ const LocationUpdater = () => {
 
           if (!response.ok) {
             const errorText = await response.text();
-            console.error(
+            /* console.error(
               "Error sending location to backend:",
               response.statusText,
               errorText
-            );
+            ); */
           } else {
             console.log(
               `Location sent to backend: latitude=${latitude}, longitude=${longitude}`

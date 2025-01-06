@@ -101,12 +101,12 @@ export default function LoginPage() {
           Alert.alert("Error", "Failed to parse server response");
         }
       } else {
-        console.log("Login failed with response data: ", responseData);
-        Alert.alert("Error", responseData?.message || responseText || "Login failed");
+        
+        Alert.alert("Login failed, try again");
       }
     }
     catch (error) {
-      console.error("Login error:", error);
+     
       Alert.alert("Error", "An error occurred during login");}
   };
 

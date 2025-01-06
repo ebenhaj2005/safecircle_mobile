@@ -59,7 +59,7 @@ export default function Home() {
 
   const fetchAlerts = async (circleId) => {
     try {
-      const response = await fetch(`http://192.168.1.61:8080/alert/${userId}`, {
+      const response = await fetch(`http://192.168.0.114:8080/alert/${userId}`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${accessToken}`,

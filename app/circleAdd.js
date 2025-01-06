@@ -54,7 +54,7 @@ const CircleAdd = () => {
       return;
     }
 
-    const addCircleUrl = `http://192.168.1.61:8080/circle/${userId}/create`;
+    const addCircleUrl = `http://192.168.0.114:8080/circle/${userId}/create`;
 
     try {
       const response = await fetch(addCircleUrl, {
@@ -84,7 +84,7 @@ const CircleAdd = () => {
   };
 
   return (
-    <View style={styles.container}> <LocationUpdater />
+    <View style={styles.container}><LocationUpdater />
       <TouchableOpacity
         style={styles.backButton}
         onPress={() => navigation.goBack()}
