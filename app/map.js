@@ -59,7 +59,7 @@ export default function Home() {
 
   const fetchAlerts = async (circleId) => {
     try {
-      const response = await fetch(`http://192.168.0.114:8080/alert/${userId}`, {
+      const response = await fetch(`http://192.168.1.61:8080/alert/${userId}`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -160,7 +160,22 @@ export default function Home() {
           if (alert.status === "SOS") {
             return alert.active ? (
               // Active SOS: Red Marker (User Location)
-              <Marker
+            <Marker
+                key={`red-${index}`}
+                coordinate={{
+                  latitude: alert.location.latitude,
+                  longitude: alert.location.longitude,
+                }}
+                title={`${alert.firstName} has sent an SOS alert `}
+                description={alert.description } 
+                onPress={() => handleAlertMarkerPress(alert.location.latitude, alert.location.longitude)}
+
+
+                pinColor="red"
+              /> 
+            ) : (
+              // Stopped SOS: Green Marker (Static Location)
+               <Marker
                 key={`green-${index}`}
                 coordinate={{
                   latitude: alert.userLocation.latitude,
@@ -168,21 +183,8 @@ export default function Home() {
                 }}
                 title={`${alert.firstName} has sent an SOS`}
                 description={alert.description}
+                onPress={() => handleAlertMarkerPress(alert.userLocation.latitude, alert.userLocation.longitude)}
                 pinColor="green"
-              />
-            ) : (
-              // Stopped SOS: Green Marker (Static Location)
-              <Marker
-                key={`red-${index}`}
-                coordinate={{
-                  latitude: alert.location.latitude,
-                  longitude: alert.location.longitude,
-                }}
-                title={`${alert.firstName} has sent an SOS alert `}
-                description={alert.description + " (Stopped)"} 
-
-
-                pinColor="red"
               />
             );
           }

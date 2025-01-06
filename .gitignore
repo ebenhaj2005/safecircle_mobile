@@ -38,3 +38,6 @@ yarn-error.*
 app-example
 package.json
 package.json
+package-lock.json
+package-lock.json
+package.json

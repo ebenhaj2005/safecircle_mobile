@@ -108,7 +108,7 @@ export default function EventRequestPage() {
     const formattedEndDate = formatDateToISO(endDay);
    
   
-    const requestUrl = `http://192.168.0.114:8080/event/${userId}/request`;
+    const requestUrl = `http://192.168.1.61:8080/event/${userId}/request`;
   
 
     // Request body opstellen
