@@ -1,50 +1,58 @@
-# Welcome to your Expo app 👋
+# SafeCircle 
+## Overview
+SafeCircle is a personal safety app designed for youth and young adults, offering emergency alerts to both your safety circle and everyone within a 2 km radius. It features customizable alerts, location sharing, and Event Circles for staying connected during events, all for free. SafeCircle addresses the need for accessible safety solutions, making it unique and user-friendly.
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## Functions
 
-## Get started
+### Alerts
+- **Send alerts:** Users can send alerts to the general public or specific circles.
+- **View alerts on the map:** Users can see past alerts and their positions when they are in an alert.
 
-1. Install dependencies
+### Circles
+- **Manage circles:** Users can create, update, and delete circles, as well as add other users to them.
+- **Accept invitations:** Users can accept invitations to join circles.
+- **View circle alert history:** Users can view the alert history for the circles they belong to.
+  
+### Events
+- **Join events:** Users can join events and see alerts related to these events, which are intended for larger groups of people.
+- **Request event creation:** Users can send requests to create new events.
 
+
+## Installation
+### Requirements
+**clone the project from github**
+
+### Frontend Admin Web
+1. Navigate to the `/safecircle_mobile` directory.
+2. Install the required dependencies:
    ```bash
    npm install
    ```
+3. ```bash
+    npm expo start
+    ```
+4. Use the provided domain in the terminal to access the web application.
 
-2. Start the app
+### Backend
+- **backend**: Follow the steps in "**https://github.com/Youmni/safecircle_backend/**".
 
-   ```bash
-    npx expo start
-   ```
+### Frontend Admin Web
+- **Admin-Web**: Follow the steps in "**https://github.com/Youmni/safecircle_web**".
 
-In the output, you'll find options to open the app in a
+## Technologies
+1. **React js**: Used for building the web frontend of the application.
+2. **Tailwind CSS**: Used for styling
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Sources 
+- [@Map](https://pigeon-maps.js.org/)
+- [@UseContext](https://react.dev/reference/react/useContext)
+- [@React Native](https://reactnative.dev/docs/modal)
+- [@i18next](https://www.i18next.com/)
+- [@push notification](https://youtu.be/xYRbYG77M_o?si=DDhX8zPcWF-IdSlB)
+- [@React Native Course](https://www.youtube.com/watch?v=0-S5a0eXPoc&t=2413s)
+- [@SDK error](https://chatgpt.com/share/67599fbf-ed20-8011-a10f-998d45b85a05)
+  
+### Authors
+- [@Mehmet Schepens](https://github.com/MehmetSpns)
+- [@Brent Vanroelen](https://github.com/brentvanroelen)
+- [@Elias Ebenhaj](https://github.com/ebenhaj2005)
