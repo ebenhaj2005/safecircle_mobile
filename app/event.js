@@ -43,7 +43,7 @@ export default function EventsPage() {
 
     try {
       const response = await fetch(
-        "http://192.168.1.61:8080/circle/event/all",
+        "http://192.168.129.177:8080/event/approved", 
         {
           method: "GET",
           headers: {
@@ -54,12 +54,14 @@ export default function EventsPage() {
       );
 
       if (!response.ok) {
-        const text = await response.text(); // Get the response as text
-        throw new Error(`Failed to fetch circles: ${text}`);
+        const text = await response.text(); 
+        throw new Error(`Failed to fetch events: ${text}`);
       }
 
       const data = await response.json();
-      setCircles(data); // Set circles fetched from backend
+      console.log("Fetched approved events:", data); 
+
+      setCircles(data);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -67,14 +69,12 @@ export default function EventsPage() {
     }
   };
 
-  // Fetch circles when access token is available
   useEffect(() => {
     fetchCircles();
   }, [accessToken]);
 
-  // Filter circles based on the search query
   const filteredCircles = circles.filter((circle) =>
-    circle.circleName && circle.circleName.toLowerCase().includes(searchQuery.toLowerCase())
+    circle.eventName && circle.eventName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleJoinCircle = async (circleId) => {
@@ -90,15 +90,13 @@ export default function EventsPage() {
           text: "Yes",
           onPress: async () => {
             try {
-              // Fetch userId from SecureStore or any other source
               const userId = await SecureStore.getItemAsync("userId");
               if (!userId) {
                 throw new Error("User ID not found.");
               }
 
-              // Step 1: Send a request to add the user to the event (circle)
               const addUserToEventResponse = await fetch(
-                `http://192.168.1.61:8080/event/${circleId}/add/${userId}`,
+                `http://192.168.129.177:8080/event/${circleId}/add/${userId}`,
                 {
                   method: "POST",
                   headers: {
@@ -114,7 +112,6 @@ export default function EventsPage() {
               }
 
               Alert.alert("Success", "You have successfully joined the event circle!");
-              // Optionally re-fetch circles to update the UI
               fetchCircles();
             } catch (err) {
               Alert.alert("Error", `Failed to join circle: ${err.message}`);
@@ -128,7 +125,7 @@ export default function EventsPage() {
   if (loading) {
     return (
       <View style={styles.container}>
-        <Text style={styles.loadingText}>Loading circles...</Text>
+        <Text style={styles.loadingText}>Loading events...</Text>
       </View>
     );
   }
@@ -142,9 +139,10 @@ export default function EventsPage() {
   }
 
   return (
-    <View style={styles.container}><LocationUpdater />
+    <View style={styles.container}>
+      <LocationUpdater />
       <View style={styles.header}>
-        <Text style={styles.title}>Event Circles</Text>
+        <Text style={styles.title}>Approved Event Circles</Text>
         <TouchableOpacity style={styles.addButton}>
           <Link href="/eventrequestpage" style={styles.link}>
             <Icon name="add-circle-outline" size={29} color="#d68787" />
@@ -161,7 +159,7 @@ export default function EventsPage() {
         />
         <TextInput
           style={styles.searchInput}
-          placeholder="Search circles"
+          placeholder="Search events"
           placeholderTextColor="#a29da0"
           value={searchQuery}
           onChangeText={setSearchQuery}
@@ -170,16 +168,17 @@ export default function EventsPage() {
 
       <FlatList
         data={filteredCircles}
-        keyExtractor={(item) => String(item.circleId)}
+        keyExtractor={(item) => String(item.eventId)}
         renderItem={({ item }) => (
           <View style={styles.eventCard}>
             <View>
-              <Text style={styles.eventName}>{item.circleName}</Text>
-              <Text style={styles.eventDate}>Type: {item.circleType}</Text>
+              <Text style={styles.eventName}>{item.eventName}</Text>
+              <Text style={styles.eventDate}>Start: {item.startDate}</Text>
+              <Text style={styles.eventDate}>End: {item.endDate}</Text>
             </View>
             <TouchableOpacity
               style={styles.joinButton}
-              onPress={() => handleJoinCircle(item.circleId)}
+              onPress={() => handleJoinCircle(item.eventId)}
             >
               <Text style={styles.joinButtonText}>Join</Text>
             </TouchableOpacity>

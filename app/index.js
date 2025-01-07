@@ -85,7 +85,7 @@ export default function Home() {
           console.log("Updating location during SOS:", latitude, longitude);
   
           const response = await fetch(
-            `http://192.168.0.114:8080/user/location/${userId}?latitude=${latitude}&longitude=${longitude}`,
+            `http://192.168.129.177:8080/user/location/${userId}?latitude=${latitude}&longitude=${longitude}`,
             {
               method: "PUT",
               headers: {
@@ -123,7 +123,7 @@ export default function Home() {
       if (!userId || !accessToken) return;
   
       try {
-        const response = await fetch(`http://192.168.0.114:8080/circle/getAll/${userId}`, {
+        const response = await fetch(`http://192.168.129.177:8080/circle/getAll/${userId}`, {
           method: "GET",
           headers: { Authorization: `Bearer ${accessToken}` },
         });
@@ -214,7 +214,7 @@ export default function Home() {
   
 
         
-        const response = await fetch(`http://192.168.0.114:8080/user/${userId}/register-token`, {
+        const response = await fetch(`http://192.168.129.177:8080/user/${userId}/register-token`, {
           method: 'POST',
           headers: {
           Authorization: `Bearer ${accessToken}`,
