@@ -48,7 +48,7 @@ const Circle = () => {
         return;
       }
 
-      const url = `http://192.168.1.61:8080/circle/getAll/${userId}`;
+      const url = `http://192.168.129.177:8080/circle/getAll/${userId}`;
 
       try {
         const response = await fetch(url, {
@@ -73,11 +73,10 @@ const Circle = () => {
 
     const fetchInvitations = async () => {
       if (!userId || !accessToken) {
-        //console.error("User  ID or Access Token is missing");
         return;
       }
 
-      const url = `http://192.168.1.61:8080/invitation/showAll/${userId}`;
+      const url = `http://192.168.129.177:8080/invitation/showAll/${userId}`;
 
       try {
         const response = await fetch(url, {
@@ -90,7 +89,7 @@ const Circle = () => {
         const data = await response.json();
         setInvitations(data);
       } catch (error) {
-        //console.error("Error fetching invitations data:", error);
+        console.error("Error fetching invitations data:", error);
       }
     };
 
@@ -106,7 +105,7 @@ const Circle = () => {
 
     try {
       const response = await fetch(
-        `http://192.168.1.61:8080/invitation/${invitationId}/${circleId}/${receiverId}/accept`,
+        `http://192.168.129.177:8080/invitation/${invitationId}/${circleId}/${receiverId}/accept`,
         {
           method: "PUT",
           headers: {
@@ -118,10 +117,9 @@ const Circle = () => {
       if (!response.ok) throw new Error("Failed to accept invitation");
       Alert.alert("Success", "Invitation accepted!");
 
-      //fetchCircles(); // Re-fetch circles to include the newly joined circle
       setInvitations((prev) =>
         prev.filter((inv) => inv.invitationId !== invitationId)
-      ); // Remove the accepted invitation from the list
+      );
     } catch (error) {
       console.error("Error accepting invitation:", error);
       Alert.alert("Error", `Failed to accept invitation: ${error.message}`);
@@ -129,7 +127,7 @@ const Circle = () => {
   };
 
   const handleDeclineInvitation = async (invitationId) => {
-    const url = `http://192.168.1.61:8080/invitation/${invitationId}/decline`;
+    const url = `http://192.168.129.177:8080/invitation/${invitationId}/decline`;
     try {
       const response = await fetch(url, {
         method: "PUT",
@@ -151,17 +149,19 @@ const Circle = () => {
   };
 
   const renderItem = ({ item }) => {
-    const isRegularCircle = item.circleType === "REGULAR";  // Check if circle is "REGULAR"
-    
+    const isRegularCircle = item.circleType === "REGULAR";
+    const isEventCircle = item.circleType === "EVENT";
+
     return (
-   
-      <View style={styles.circleContainer}><LocationUpdater />
+      <View style={styles.circleContainer}>
         <TouchableOpacity
           onPress={() => {
             if (isRegularCircle) {
               navigation.navigate("circleDetails", { circleId: item.circleId });
+            } else if (isEventCircle) {
+              navigation.navigate("eventHistory", { circleId: item.circleId });
             } else {
-              Alert.alert("Access Denied", "You cannot update this circle");
+              Alert.alert("Invalid Type", "Unknown circle type.");
             }
           }}
           style={styles.circle}
@@ -218,7 +218,6 @@ const Circle = () => {
       {renderHeader()}
       <View style={styles.separator} />
       
-      {/* Render Regular Circles */}
       {regularCircles.length > 0 && (
         <>
           <Text style={styles.sectionTitle}>Regular Circles</Text>
@@ -233,7 +232,6 @@ const Circle = () => {
         </>
       )}
 
-      {/* Render Event Circles */}
       {eventCircles.length > 0 && (
         <>
           <Text style={styles.sectionTitle}>Event Circles</Text>
@@ -274,142 +272,142 @@ const Circle = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "white",
-    paddingTop: 50,
-    paddingBottom: 100
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    backgroundColor: "#f9f9f9",
-    paddingVertical: 10
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#CD9594"
-  },
-  notificationIcon: {
-    position: "relative"
-  },
-  notificationBubble: {
-    position: "absolute",
-    top: -5,
-    right: -5,
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: "red"
-  },
-  circleContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 20,
-    width: "48%"
-  },
-  circle: {
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    backgroundColor: "#CD9594",
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.34,
-    shadowRadius: 6.27,
-    elevation: 10
-  },
-  circleName: {
-    fontSize: 20,
-    color: "#fff",
-    textAlign: "center"
-  },
-  noCirclesText: {
-    textAlign: "center",
-    fontSize: 18,
-    color: "gray"
-  },
-  separator: {
-    height: 1,
-    width: "80%",
-    backgroundColor: "#CD9594",
-    alignSelf: "center",
-    marginBottom: 20
-  },
-  list: {
-    paddingHorizontal: 10
-  },
-  sectionTitle: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "#CD9594",
-    marginBottom: 10,
-    textAlign: "center"
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.5)"
-  },
-  modalContent: {
-    width: "80%",
-    backgroundColor: "white",
-    borderRadius: 10,
-    padding: 20,
-    alignItems: "center"
-  },
-  modalTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
-    color: "#CD9594"
-  },
-  closeButton: {
-    marginTop: 20,
-    padding: 10,
-    backgroundColor: "#CD9594",
-    borderRadius: 10
-  },
-  closeButtonText: {
-    color: "white",
-    fontSize: 18
-  },
-  invitationContainer: {
-    padding: 10,
-    backgroundColor: "#f0f0f0",
-    borderRadius: 8,
-    marginBottom: 10
-  },
-  invitationText: {
-    fontSize: 16,
-    marginBottom: 10
-  },
-  invitationButtons: {
-    flexDirection: "row",
-    justifyContent: "space-between"
-  },
-  acceptButton: {
-    backgroundColor: "#4CAF50",
-    padding: 10,
-    borderRadius: 5
-  },
-  declineButton: {
-    backgroundColor: "#f44336",
-    padding: 10,
-    borderRadius: 5
-  },
-  buttonText: {
-    color: "#fff",
-    fontWeight: "bold"
-  }
-});
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: "white",
+      paddingTop: 50,
+      paddingBottom: 100
+    },
+    header: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingHorizontal: 20,
+      backgroundColor: "#f9f9f9",
+      paddingVertical: 10
+    },
+    title: {
+      fontSize: 24,
+      fontWeight: "bold",
+      color: "#CD9594"
+    },
+    notificationIcon: {
+      position: "relative"
+    },
+    notificationBubble: {
+      position: "absolute",
+      top: -5,
+      right: -5,
+      width: 10,
+      height: 10,
+      borderRadius: 5,
+      backgroundColor: "red"
+    },
+    circleContainer: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 20,
+      width: "48%"
+    },
+    circle: {
+      width: 150,
+      height: 150,
+      borderRadius: 75,
+      backgroundColor: "#CD9594",
+      justifyContent: "center",
+      alignItems: "center",
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 0 },
+      shadowOpacity: 0.34,
+      shadowRadius: 6.27,
+      elevation: 10
+    },
+    circleName: {
+      fontSize: 20,
+      color: "#fff",
+      textAlign: "center"
+    },
+    noCirclesText: {
+      textAlign: "center",
+      fontSize: 18,
+      color: "gray"
+    },
+    separator: {
+      height: 1,
+      width: "80%",
+      backgroundColor: "#CD9594",
+      alignSelf: "center",
+      marginBottom: 20
+    },
+    list: {
+      paddingHorizontal: 10
+    },
+    sectionTitle: {
+      fontSize: 22,
+      fontWeight: "bold",
+      color: "#CD9594",
+      marginBottom: 10,
+      textAlign: "center"
+    },
+    modalContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: "rgba(0,0,0,0.5)"
+    },
+    modalContent: {
+      width: "80%",
+      backgroundColor: "white",
+      borderRadius: 10,
+      padding: 20,
+      alignItems: "center"
+    },
+    modalTitle: {
+      fontSize: 24,
+      fontWeight: "bold",
+      marginBottom: 20,
+      color: "#CD9594"
+    },
+    closeButton: {
+      marginTop: 20,
+      padding: 10,
+      backgroundColor: "#CD9594",
+      borderRadius: 10
+    },
+    closeButtonText: {
+      color: "white",
+      fontSize: 18
+    },
+    invitationContainer: {
+      padding: 10,
+      backgroundColor: "#f0f0f0",
+      borderRadius: 8,
+      marginBottom: 10
+    },
+    invitationText: {
+      fontSize: 16,
+      marginBottom: 10
+    },
+    invitationButtons: {
+      flexDirection: "row",
+      justifyContent: "space-between"
+    },
+    acceptButton: {
+      backgroundColor: "#4CAF50",
+      padding: 10,
+      borderRadius: 5
+    },
+    declineButton: {
+      backgroundColor: "#f44336",
+      padding: 10,
+      borderRadius: 5
+    },
+    buttonText: {
+      color: "#fff",
+      fontWeight: "bold"
+    }
+  });
 
-export default Circle;
+  export default Circle;

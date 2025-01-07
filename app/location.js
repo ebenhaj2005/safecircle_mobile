@@ -46,7 +46,7 @@ const LocationUpdater = () => {
    
 
           const response = await fetch(
-            `http://192.168.1.61:8080/user/${userId}`,
+            `http://192.168.129.177:8080/user/${userId}`,
             {
               method: "PUT",
               headers: {

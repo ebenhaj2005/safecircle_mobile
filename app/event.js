@@ -42,7 +42,7 @@ export default function EventsPage() {
 
     try {
       const response = await fetch(
-        "http://192.168.1.61:8080/event/approved", 
+        "http://192.168.129.177:8080/event/approved", 
         {
           method: "GET",
           headers: {
@@ -95,7 +95,7 @@ export default function EventsPage() {
               }
 
               const addUserToEventResponse = await fetch(
-                `http://192.168.1.61:8080/event/${circleId}/add/${userId}`,
+                `http://192.168.129.177:8080/event/${circleId}/add/${userId}`,
                 {
                   method: "POST",
                   headers: {

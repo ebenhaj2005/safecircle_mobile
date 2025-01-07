@@ -47,6 +47,10 @@ export default function RootLayout() {
           options={{ title: "circleHistory", headerShown: false }}
         />
         <Stack.Screen
+          name="eventHistory"
+          options={{ title: "eventHistory", headerShown: false }}
+        />
+        <Stack.Screen
           name="map"
           options={{ title: "Map", headerShown: false }}
         />
