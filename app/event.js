@@ -20,7 +20,6 @@ export default function EventsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [accessToken, setAccessToken] = useState(null);
 
-  // Fetch the access token from SecureStore
   useEffect(() => {
     const fetchAccessToken = async () => {
       try {
