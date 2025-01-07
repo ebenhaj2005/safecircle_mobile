@@ -85,7 +85,7 @@ export default function Home() {
           console.log("Updating location during SOS:", latitude, longitude);
   
           const response = await fetch(
-            `http://192.168.0.114:8080/user/location/${userId}?latitude=${latitude}&longitude=${longitude}`,
+            `http://192.168.1.61:8080/user/location/${userId}?latitude=${latitude}&longitude=${longitude}`,
             {
               method: "PUT",
               headers: {
@@ -123,7 +123,7 @@ export default function Home() {
       if (!userId || !accessToken) return;
   
       try {
-        const response = await fetch(`http://192.168.0.114:8080/circle/getAll/${userId}`, {
+        const response = await fetch(`http://192.168.1.61:8080/circle/getAll/${userId}`, {
           method: "GET",
           headers: { Authorization: `Bearer ${accessToken}` },
         });
@@ -214,7 +214,7 @@ export default function Home() {
   
 
         
-        const response = await fetch(`http://192.168.0.114:8080/user/${userId}/register-token`, {
+        const response = await fetch(`http://192.168.1.61:8080/user/${userId}/register-token`, {
           method: 'POST',
           headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -397,7 +397,7 @@ export default function Home() {
     //console.log('SOS Data to send:', JSON.stringify(sosData));
 
     // Send the SOS data to the server
-    fetch(`http://192.168.0.114:8080/alert/${userId}/send`, {
+    fetch(`http://192.168.1.61:8080/alert/${userId}/send`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -432,7 +432,7 @@ export default function Home() {
       await AsyncStorage.setItem('timer', '0');
   
       try {
-        const response = await fetch(`http://192.168.0.114:8080/alert/${userId}/stop`, {
+        const response = await fetch(`http://192.168.1.61:8080/alert/${userId}/stop`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -609,7 +609,7 @@ export default function Home() {
       console.log('UNSAFE Data to send:', JSON.stringify(unsafeData));
 
       // Verstuur naar de backend
-      const response = await fetch(`http://192.168.0.114:8080/alert/${userId}/send`, {
+      const response = await fetch(`http://192.168.1.61:8080/alert/${userId}/send`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

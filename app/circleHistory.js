@@ -97,6 +97,7 @@ const CircleHistory = () => {
 
           return (
             <View style={styles.alertItem}>
+              <Text>{item.firstname} {item.lastname}</Text>
               <Text>{item.description}</Text>
               <Text>{formattedDate}</Text> {/* Display formatted date */}
               <TouchableOpacity
