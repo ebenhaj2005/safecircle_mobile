@@ -33,7 +33,7 @@ export default function ProfilePI() {
         const accessToken = await SecureStore.getItemAsync("accessToken");
 
         if (userId && accessToken) {
-          const response = await fetch(`http://192.168.129.177:8080/user/${userId}`, {
+          const response = await fetch(`http://192.168.1.61:8080/user/${userId}`, {
             headers: {
               Authorization: `Bearer ${accessToken}`,
             },
@@ -82,7 +82,7 @@ export default function ProfilePI() {
     const accessToken = await SecureStore.getItemAsync("accessToken");
   
     // De URL aanpassen om query parameters toe te voegen in plaats van JSON body
-    const url = `http://192.168.129.177:8080/user/update/${userId}?firstName=${encodeURIComponent(updatedUser.firstName)}&lastName=${encodeURIComponent(updatedUser.lastName)}&email=${encodeURIComponent(updatedUser.email)}&phoneNumber=${encodeURIComponent(updatedUser.phone)}&dateOfBirth=${encodeURIComponent(updatedUser.dateOfBirth)}`;
+    const url = `http://192.168.1.61:8080/user/update/${userId}?firstName=${encodeURIComponent(updatedUser.firstName)}&lastName=${encodeURIComponent(updatedUser.lastName)}&email=${encodeURIComponent(updatedUser.email)}&phoneNumber=${encodeURIComponent(updatedUser.phone)}&dateOfBirth=${encodeURIComponent(updatedUser.dateOfBirth)}`;
   
     try {
       const response = await fetch(url, {

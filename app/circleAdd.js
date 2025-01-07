@@ -54,7 +54,7 @@ const CircleAdd = () => {
       return;
     }
 
-    const addCircleUrl = `http://192.168.129.177:8080/circle/${userId}/create`;
+    const addCircleUrl = `http://192.168.1.61:8080/circle/${userId}/create`;
 
     try {
       const response = await fetch(addCircleUrl, {

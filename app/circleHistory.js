@@ -51,7 +51,7 @@ const CircleHistory = () => {
         }
 
         const response = await fetch(
-          `http://192.168.129.177:8080/alert/${storedUserId}/${circleId}/getAllCircleAlerts`,
+          `http://192.168.1.61:8080/alert/${storedUserId}/${circleId}/getAllCircleAlerts`,
           {
             method: "GET",
             headers: { Authorization: `Bearer ${accessToken}` },
@@ -97,7 +97,7 @@ const CircleHistory = () => {
 
           return (
             <View style={styles.alertItem}>
-              <Text>{item.firstname} {item.lastname}</Text>
+              <Text>{item.firstName} {item.lastName}</Text>
               <Text>{item.description}</Text>
               <Text>{formattedDate}</Text> {/* Display formatted date */}
               <TouchableOpacity
