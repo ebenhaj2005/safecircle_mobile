@@ -20,6 +20,9 @@ SafeCircle is a personal safety app designed for youth and young adults, offerin
 
 ## Installation
 ### Requirements
+- **Node.js:** [@Node.js 20.x or higher](https://nodejs.org/en)
+
+### Steps
 **clone the project from github**
 
 ### Frontend Admin Web
