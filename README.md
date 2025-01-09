@@ -34,7 +34,7 @@ SafeCircle is a personal safety app designed for youth and young adults, offerin
 3. ```bash
     npm expo start
     ```
-4. Use the provided domain in the terminal to access the web application.
+4. Use the provided QR code to launch the app.
 
 ### Backend
 - **backend**: Follow the steps in "**https://github.com/Youmni/safecircle_backend/**".
